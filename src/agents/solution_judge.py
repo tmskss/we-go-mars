@@ -69,7 +69,14 @@ class SolutionJudgment(BaseModel):
     weaknesses: list[str] = []
 
 
-class SolutionJudgeAgent(BaseAgent):
+class SolutionJudgeInput(BaseModel):
+    """Input for solution judge agent."""
+
+    solution: Solution
+    requirement: Requirement
+
+
+class SolutionJudgeAgent(BaseAgent[SolutionJudgeInput, SolutionJudgment]):
     """
     Judges the quality of proposed solutions.
 
@@ -80,21 +87,16 @@ class SolutionJudgeAgent(BaseAgent):
     def __init__(self, instance_id: int = 1):
         super().__init__(
             name=f"solution_judge_{instance_id}",
-            system_prompt=SYSTEM_PROMPT,
+            instructions=SYSTEM_PROMPT,
         )
         self.instance_id = instance_id
 
-    async def execute(
-        self,
-        solution: Solution,
-        requirement: Requirement,
-    ) -> SolutionJudgment:
+    async def execute(self, input_data: SolutionJudgeInput) -> SolutionJudgment:
         """
         Judge the quality of a solution.
 
         Args:
-            solution: The proposed solution
-            requirement: The requirement being solved
+            input_data: SolutionJudgeInput containing solution and requirement
 
         Returns:
             SolutionJudgment with scores and feedback

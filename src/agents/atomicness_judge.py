@@ -45,7 +45,7 @@ class AtomicnessJudgment(BaseModel):
     suggestion: str | None = None
 
 
-class AtomicnessJudgeAgent(BaseAgent):
+class AtomicnessJudgeAgent(BaseAgent[Requirement, AtomicnessJudgment]):
     """
     Judges whether a requirement is atomic.
 
@@ -56,16 +56,16 @@ class AtomicnessJudgeAgent(BaseAgent):
     def __init__(self, instance_id: int = 1):
         super().__init__(
             name=f"atomicness_judge_{instance_id}",
-            system_prompt=SYSTEM_PROMPT,
+            instructions=SYSTEM_PROMPT,
         )
         self.instance_id = instance_id
 
-    async def execute(self, requirement: Requirement) -> AtomicnessJudgment:
+    async def execute(self, input_data: Requirement) -> AtomicnessJudgment:
         """
         Judge if the requirement is atomic.
 
         Args:
-            requirement: The requirement to evaluate
+            input_data: The requirement to evaluate
 
         Returns:
             AtomicnessJudgment with verdict

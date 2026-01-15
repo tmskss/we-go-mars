@@ -14,12 +14,12 @@ from src.agents.base import BaseAgent, AgentExecutor, JudgeAgent
 from src.agents.deep_researcher import DeepResearcherAgent
 from src.agents.requirement_decomposer import RequirementDecomposerAgent
 from src.agents.atomicness_judge import AtomicnessJudgeAgent
-from src.agents.feasibility_judge import FeasibilityJudgeAgent
-from src.agents.suggestor import SuggestorAgent
-from src.agents.proposer import ProposerAgent
-from src.agents.solution_judge import SolutionJudgeAgent
+from src.agents.feasibility_judge import FeasibilityJudgeAgent, FeasibilityJudgeInput
+from src.agents.suggestor import SuggestorAgent, SuggestorInput
+from src.agents.proposer import ProposerAgent, ProposerInput
+from src.agents.solution_judge import SolutionJudgeAgent, SolutionJudgeInput
 from src.agents.aggregator import AggregatorAgent
-from src.agents.plan_synthesizer import PlanSynthesizerAgent
+from src.agents.plan_synthesizer import PlanSynthesizerAgent, PlanSynthesizerInput
 
 __all__ = [
     "BaseAgent",
@@ -29,9 +29,14 @@ __all__ = [
     "RequirementDecomposerAgent",
     "AtomicnessJudgeAgent",
     "FeasibilityJudgeAgent",
+    "FeasibilityJudgeInput",
     "SuggestorAgent",
+    "SuggestorInput",
     "ProposerAgent",
+    "ProposerInput",
     "SolutionJudgeAgent",
+    "SolutionJudgeInput",
     "AggregatorAgent",
     "PlanSynthesizerAgent",
+    "PlanSynthesizerInput",
 ]

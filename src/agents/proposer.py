@@ -72,7 +72,16 @@ class ProposerOutput(BaseModel):
     solution: Solution
 
 
-class ProposerAgent(BaseAgent):
+class ProposerInput(BaseModel):
+    """Input for proposer agent."""
+
+    requirement: Requirement
+    context: str = ""
+    num_branches: int = 3
+    depth: int = 3
+
+
+class ProposerAgent(BaseAgent[ProposerInput, ProposerOutput]):
     """
     Generates solutions using Tree of Thoughts reasoning.
 
@@ -83,25 +92,16 @@ class ProposerAgent(BaseAgent):
     def __init__(self, instance_id: int = 1):
         super().__init__(
             name=f"proposer_{instance_id}",
-            system_prompt=SYSTEM_PROMPT,
+            instructions=SYSTEM_PROMPT,
         )
         self.instance_id = instance_id
 
-    async def execute(
-        self,
-        requirement: Requirement,
-        context: str = "",
-        num_branches: int = 3,
-        depth: int = 3,
-    ) -> ProposerOutput:
+    async def execute(self, input_data: ProposerInput) -> ProposerOutput:
         """
         Generate a solution using Tree of Thoughts.
 
         Args:
-            requirement: The atomic requirement to solve
-            context: Retrieved context from RAG
-            num_branches: Number of initial approaches (N)
-            depth: Depth of reasoning (D)
+            input_data: ProposerInput containing requirement, context, and ToT parameters
 
         Returns:
             ProposerOutput with solution and reasoning tree
@@ -115,7 +115,7 @@ class ProposerAgent(BaseAgent):
 
         # Placeholder implementation
         placeholder_solution = Solution(
-            requirement_id=requirement.id,
+            requirement_id=input_data.requirement.id,
             content="TODO: Implement ToT solution generation",
             reasoning_chain=["Step 1: Analyze", "Step 2: Generate", "Step 3: Refine"],
             source=SolutionSource.NOVEL,

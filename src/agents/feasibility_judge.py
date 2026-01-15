@@ -45,7 +45,14 @@ class FeasibilityJudgment(BaseModel):
     missing_info: list[str] = []
 
 
-class FeasibilityJudgeAgent(BaseAgent):
+class FeasibilityJudgeInput(BaseModel):
+    """Input for feasibility judge agent."""
+
+    requirement: Requirement
+    context: str = ""
+
+
+class FeasibilityJudgeAgent(BaseAgent[FeasibilityJudgeInput, FeasibilityJudgment]):
     """
     Judges whether a requirement is feasible to solve.
 
@@ -56,19 +63,16 @@ class FeasibilityJudgeAgent(BaseAgent):
     def __init__(self, instance_id: int = 1):
         super().__init__(
             name=f"feasibility_judge_{instance_id}",
-            system_prompt=SYSTEM_PROMPT,
+            instructions=SYSTEM_PROMPT,
         )
         self.instance_id = instance_id
 
-    async def execute(
-        self, requirement: Requirement, context: str = ""
-    ) -> FeasibilityJudgment:
+    async def execute(self, input_data: FeasibilityJudgeInput) -> FeasibilityJudgment:
         """
         Judge if the requirement is feasible.
 
         Args:
-            requirement: The requirement to evaluate
-            context: Available context for solving
+            input_data: FeasibilityJudgeInput containing requirement and context
 
         Returns:
             FeasibilityJudgment with verdict

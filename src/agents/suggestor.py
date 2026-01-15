@@ -58,7 +58,15 @@ class SuggestorOutput(BaseModel):
     recommended_action: str
 
 
-class SuggestorAgent(BaseAgent):
+class SuggestorInput(BaseModel):
+    """Input for suggestor agent."""
+
+    requirement: Requirement
+    atomicness_feedback: str | None = None
+    feasibility_feedback: str | None = None
+
+
+class SuggestorAgent(BaseAgent[SuggestorInput, SuggestorOutput]):
     """
     Suggests refinements for failed requirements.
 
@@ -69,23 +77,16 @@ class SuggestorAgent(BaseAgent):
     def __init__(self, instance_id: int = 1):
         super().__init__(
             name=f"suggestor_{instance_id}",
-            system_prompt=SYSTEM_PROMPT,
+            instructions=SYSTEM_PROMPT,
         )
         self.instance_id = instance_id
 
-    async def execute(
-        self,
-        requirement: Requirement,
-        atomicness_feedback: str | None = None,
-        feasibility_feedback: str | None = None,
-    ) -> SuggestorOutput:
+    async def execute(self, input_data: SuggestorInput) -> SuggestorOutput:
         """
         Suggest refinements for a failed requirement.
 
         Args:
-            requirement: The requirement that failed checks
-            atomicness_feedback: Feedback from atomicness judge
-            feasibility_feedback: Feedback from feasibility judge
+            input_data: SuggestorInput containing requirement and judge feedback
 
         Returns:
             SuggestorOutput with refinement suggestions

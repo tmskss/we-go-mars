@@ -7,6 +7,8 @@ and the original hypothesis.
 Owner: [ASSIGN TEAMMATE]
 """
 
+from pydantic import BaseModel
+
 from src.agents.base import BaseAgent
 from src.agents.aggregator import AggregatorOutput
 from src.models.hypothesis import Hypothesis
@@ -48,7 +50,14 @@ Output Format (JSON):
 """
 
 
-class PlanSynthesizerAgent(BaseAgent):
+class PlanSynthesizerInput(BaseModel):
+    """Input for plan synthesizer agent."""
+
+    hypothesis: Hypothesis
+    aggregated: AggregatorOutput
+
+
+class PlanSynthesizerAgent(BaseAgent[PlanSynthesizerInput, ResearchPlan]):
     """
     Synthesizes the final research plan.
 
@@ -59,20 +68,15 @@ class PlanSynthesizerAgent(BaseAgent):
     def __init__(self):
         super().__init__(
             name="plan_synthesizer",
-            system_prompt=SYSTEM_PROMPT,
+            instructions=SYSTEM_PROMPT,
         )
 
-    async def execute(
-        self,
-        hypothesis: Hypothesis,
-        aggregated: AggregatorOutput,
-    ) -> ResearchPlan:
+    async def execute(self, input_data: PlanSynthesizerInput) -> ResearchPlan:
         """
         Generate the final research plan.
 
         Args:
-            hypothesis: The original/refined hypothesis
-            aggregated: The aggregated solutions
+            input_data: PlanSynthesizerInput containing hypothesis and aggregated solutions
 
         Returns:
             Complete ResearchPlan
@@ -85,7 +89,7 @@ class PlanSynthesizerAgent(BaseAgent):
 
         # Placeholder implementation
         return ResearchPlan(
-            hypothesis=hypothesis,
+            hypothesis=input_data.hypothesis,
             goals=["TODO: Generate goals from hypothesis"],
             methodology=[],
             expected_outcomes=["TODO: Define expected outcomes"],

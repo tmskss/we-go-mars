@@ -71,7 +71,7 @@ class AggregatorOutput(BaseModel):
     gaps: list[str]
 
 
-class AggregatorAgent(BaseAgent):
+class AggregatorAgent(BaseAgent[list[Solution], AggregatorOutput]):
     """
     Aggregates all solutions into a unified set.
 
@@ -82,15 +82,15 @@ class AggregatorAgent(BaseAgent):
     def __init__(self):
         super().__init__(
             name="aggregator",
-            system_prompt=SYSTEM_PROMPT,
+            instructions=SYSTEM_PROMPT,
         )
 
-    async def execute(self, solutions: list[Solution]) -> AggregatorOutput:
+    async def execute(self, input_data: list[Solution]) -> AggregatorOutput:
         """
         Aggregate all solutions into a unified set.
 
         Args:
-            solutions: List of all approved solutions
+            input_data: List of all approved solutions
 
         Returns:
             AggregatorOutput with unified solutions and relationships

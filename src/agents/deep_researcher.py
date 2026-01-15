@@ -31,7 +31,7 @@ Output Format:
 """
 
 
-class DeepResearcherAgent(BaseAgent):
+class DeepResearcherAgent(BaseAgent[str, Hypothesis]):
     """
     Performs deep research on the hypothesis and generates clarifying questions.
 
@@ -42,15 +42,15 @@ class DeepResearcherAgent(BaseAgent):
     def __init__(self):
         super().__init__(
             name="deep_researcher",
-            system_prompt=SYSTEM_PROMPT,
+            instructions=SYSTEM_PROMPT,
         )
 
-    async def execute(self, hypothesis_text: str) -> Hypothesis:
+    async def execute(self, input_data: str) -> Hypothesis:
         """
         Research the hypothesis and generate clarifying questions.
 
         Args:
-            hypothesis_text: The user's raw hypothesis
+            input_data: The user's raw hypothesis text
 
         Returns:
             Hypothesis object with context and questions populated
@@ -61,7 +61,7 @@ class DeepResearcherAgent(BaseAgent):
         # 3. Generate clarifying questions
         # 4. Create initial context summary
 
-        hypothesis = Hypothesis(original_text=hypothesis_text)
+        hypothesis = Hypothesis(original_text=input_data)
 
         # TODO: Replace with actual implementation
         hypothesis.clarifying_questions = [

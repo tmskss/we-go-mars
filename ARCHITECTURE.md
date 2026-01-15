@@ -7,7 +7,7 @@ A multi-agent system that transforms a research hypothesis into a detailed, acti
 | Component | Technology |
 |-----------|------------|
 | Language | Python 3.12+ |
-| Agent Framework | Microsoft AutoGen |
+| Agent Framework | Microsoft Agent Framework |
 | LLM | Configurable (GPT-4o, GPT-5, etc.) |
 | Vector Database | Qdrant |
 | Deployment | Docker Compose |
@@ -100,7 +100,7 @@ we-go-mars/
 │   ├── main.py                    # CLI entry point
 │   ├── config.py                  # LLM & app configuration
 │   │
-│   ├── agents/                    # AutoGen agent definitions
+│   ├── agents/                    # Agent Framework agent definitions
 │   │   ├── __init__.py
 │   │   ├── deep_researcher.py     # Initial research & questions
 │   │   ├── requirement_decomposer.py
@@ -141,7 +141,7 @@ we-go-mars/
 
 ---
 
-## Agent Definitions (AutoGen)
+## Agent Definitions (Agent Framework)
 
 ### 1. Deep Researcher
 ```python

@@ -35,7 +35,7 @@ Output Format (JSON):
 """
 
 
-class RequirementDecomposerAgent(BaseAgent):
+class RequirementDecomposerAgent(BaseAgent[Hypothesis, RequirementTree]):
     """
     Decomposes requirements into a hierarchical tree structure.
 
@@ -46,15 +46,15 @@ class RequirementDecomposerAgent(BaseAgent):
     def __init__(self):
         super().__init__(
             name="requirement_decomposer",
-            system_prompt=SYSTEM_PROMPT,
+            instructions=SYSTEM_PROMPT,
         )
 
-    async def execute(self, hypothesis: Hypothesis) -> RequirementTree:
+    async def execute(self, input_data: Hypothesis) -> RequirementTree:
         """
         Decompose the hypothesis into a requirement tree.
 
         Args:
-            hypothesis: The refined hypothesis with context
+            input_data: The refined hypothesis with context
 
         Returns:
             RequirementTree with hierarchical requirements
@@ -66,7 +66,7 @@ class RequirementDecomposerAgent(BaseAgent):
         # 4. Return for judge evaluation
 
         root = Requirement(
-            content=f"Solve: {hypothesis.refined_text or hypothesis.original_text}",
+            content=f"Solve: {input_data.refined_text or input_data.original_text}",
             level=0,
         )
 
