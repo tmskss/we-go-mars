@@ -18,7 +18,6 @@ from src.models.solution import Solution
 
 from src.agents.deep_researcher import DeepResearcherAgent
 from src.agents.requirement_decomposer import RequirementDecomposerAgent
-from src.agents.suggestor import SuggestorAgent
 from src.agents.proposer import ProposerAgent
 from src.agents.aggregator import AggregatorAgent
 from src.agents.plan_synthesizer import PlanSynthesizerAgent
@@ -41,16 +40,10 @@ class ResearchWorkflow:
 
     def __init__(self):
         """Initialize all agents."""
-        # Single instance agents
         self.deep_researcher = DeepResearcherAgent()
         self.decomposer = RequirementDecomposerAgent()
         self.aggregator = AggregatorAgent()
         self.synthesizer = PlanSynthesizerAgent()
-
-        # Multi-instance agents
-        self.suggestors = [
-            SuggestorAgent(i) for i in range(3)
-        ]
         self.proposers = [
             ProposerAgent(i) for i in range(settings.proposer_count)
         ]
