@@ -31,8 +31,7 @@ def create_chat_client() -> OpenAIChatClient:
         Configured OpenAIChatClient instance
     """
     return OpenAIChatClient(
-        api_key=settings.openai_api_key,
-        model=settings.llm_model,
+        model_id="gpt-5-mini"
     )
 
 
@@ -140,7 +139,7 @@ class AgentExecutor(Executor, Generic[TInput, TOutput]):
         self.agent = agent
 
     @handler
-    async def handle(self, input_data: TInput, ctx: WorkflowContext[TOutput]) -> None:
+    async def handle(self, input_data: TInput, ctx: WorkflowContext[Any]) -> None:
         """
         Handle workflow execution by delegating to the wrapped agent.
 

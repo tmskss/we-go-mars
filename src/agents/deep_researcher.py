@@ -132,7 +132,7 @@ class DeepResearcherAgent(BaseAgent[str, Hypothesis]):
                     buffer += text_chunk
                     
                     if state == "INTERACTIVE":
-                        if "?" in text_chunk or ":" in text_chunk:
+                        if text_chunk.strip().endswith("?") or text_chunk.strip().endswith(":"):
                              interaction_log.append(f"Q: {text_chunk.strip()}\n")
                              
                              if not interactive:
