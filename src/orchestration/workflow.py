@@ -7,6 +7,7 @@ from hypothesis to final research plan.
 Owner: [ASSIGN TEAMMATE]
 """
 
+import asyncio
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
@@ -14,13 +15,14 @@ from src.config import settings
 from src.models.hypothesis import Hypothesis
 from src.models.requirement import Requirement, RequirementTree
 from src.models.research_plan import ResearchPlan
-from src.models.solution import Solution
+from src.models.solution import Solution, SolutionSource
 
 from src.agents.deep_researcher import DeepResearcherAgent
 from src.agents.requirement_decomposer import RequirementDecomposerAgent
-from src.agents.proposer import ProposerAgent
-from src.agents.aggregator import AggregatorAgent
+from src.agents.proposer import ProposerAgent, ProposerInput
+from src.agents.aggregator import AggregatorAgent, AggregatorInput
 from src.agents.plan_synthesizer import PlanSynthesizerAgent
+from src.agents.retriever import RetrieverAgent, RetrieverAgentInput
 
 console = Console()
 
@@ -44,6 +46,7 @@ class ResearchWorkflow:
         self.decomposer = RequirementDecomposerAgent()
         self.aggregator = AggregatorAgent()
         self.synthesizer = PlanSynthesizerAgent()
+        self.retriever = RetrieverAgent()
         self.proposers = [
             ProposerAgent(i) for i in range(settings.proposer_count)
         ]
@@ -92,7 +95,7 @@ class ResearchWorkflow:
 
             # Phase 6: Aggregation
             task = progress.add_task("Phase 6: Aggregating solutions...", total=None)
-            aggregated = await self._phase_aggregation(all_solutions)
+            aggregated = await self._phase_aggregation(req_tree.root, all_solutions)
             progress.update(task, completed=True)
 
             # Phase 7: Plan Synthesis
@@ -104,7 +107,6 @@ class ResearchWorkflow:
 
     async def _phase_deep_research(self, hypothesis_text: str) -> Hypothesis:
         """Phase 1: Deep research on the hypothesis."""
-        # TODO: Implement
         return await self.deep_researcher.execute(hypothesis_text)
 
     async def _phase_clarification(self, hypothesis: Hypothesis) -> Hypothesis:
@@ -115,8 +117,26 @@ class ResearchWorkflow:
 
     async def _phase_decomposition(self, hypothesis: Hypothesis) -> RequirementTree:
         """Phase 3: Decompose into requirement tree."""
-        # TODO: Implement
         return await self.decomposer.execute(hypothesis)
+
+    def _get_atomic_requirements(self, req_tree: RequirementTree) -> list[Requirement]:
+        """
+        Get all atomic (leaf) requirements from the tree.
+
+        Traverses the tree to find all requirements without children.
+        """
+        atomic = []
+
+        def traverse(req: Requirement):
+            if not req.children:
+                # Leaf node = atomic requirement
+                atomic.append(req)
+            else:
+                for child in req.children:
+                    traverse(child)
+
+        traverse(req_tree.root)
+        return atomic
 
     async def _phase_context_search(
         self, req_tree: RequirementTree
@@ -124,30 +144,93 @@ class ResearchWorkflow:
         """
         Phase 4: Search for existing solutions in RAG.
 
+        For each atomic requirement:
+        1. Use RetrieverAgent to search literature
+        2. If relevant content found, create an existing solution
+        3. Otherwise, mark requirement as needing novel solution
+
         Returns:
             (existing_solutions, requirements_needing_solutions)
         """
-        # TODO: Implement RAG search for existing solutions
-        # Query the literature store for each atomic requirement
-        # Return split of found vs not found
-        atomic_reqs = []  # req_tree.get_atomic_requirements()
-        return [], atomic_reqs
+        atomic_reqs = self._get_atomic_requirements(req_tree)
+
+        existing_solutions: list[Solution] = []
+        needs_solving: list[Requirement] = []
+
+        for req in atomic_reqs:
+            # Search for existing knowledge
+            retrieval_result = await self.retriever.execute(
+                RetrieverAgentInput(query=req.content, top_k=5)
+            )
+
+            if retrieval_result.success and retrieval_result.chunks:
+                # Found relevant existing knowledge - create solution from it
+                solution = Solution(
+                    requirement_id=req.id,
+                    content=retrieval_result.chunks,
+                    reasoning_chain=[
+                        f"Retrieved from: {', '.join(retrieval_result.sources)}"
+                    ],
+                    source=SolutionSource.EXISTING,
+                    confidence=0.7,
+                )
+                existing_solutions.append(solution)
+            else:
+                # No relevant knowledge found - needs novel solution
+                needs_solving.append(req)
+
+        return existing_solutions, needs_solving
 
     async def _phase_solving(self, requirements: list[Requirement]) -> list[Solution]:
         """
         Phase 5: Generate solutions for requirements.
 
-        For each requirement, run N proposers in parallel (each uses ToT).
+        For each requirement:
+        1. Get context via RetrieverAgent
+        2. Run proposer to generate solution
         """
-        # TODO: Implement solving loop
-        return []
+        solutions: list[Solution] = []
 
-    async def _phase_aggregation(self, solutions: list[Solution]):
-        """Phase 6: Aggregate all solutions."""
-        # TODO: Implement
-        return await self.aggregator.execute(solutions)
+        for req in requirements:
+            # Get context for the requirement
+            retrieval_result = await self.retriever.execute(
+                RetrieverAgentInput(query=req.content, top_k=5)
+            )
+            context = retrieval_result.chunks if retrieval_result.success else ""
+
+            # Use first proposer (we have multiple for parallel solving if needed)
+            proposer = self.proposers[0]
+            proposer_input = ProposerInput(requirement=req, context=context)
+            result = await proposer.execute(proposer_input)
+
+            solutions.append(result.solution)
+
+        return solutions
+
+    async def _phase_aggregation(
+        self, root_requirement: Requirement, solutions: list[Solution]
+    ):
+        """
+        Phase 6: Aggregate all solutions.
+
+        Currently performs single-level aggregation of all atomic solutions.
+        Future: Hierarchical tree traversal when requirement decomposition is finalized.
+        """
+        # Get additional context for the root problem
+        retrieval_result = await self.retriever.execute(
+            RetrieverAgentInput(query=root_requirement.content, top_k=5)
+        )
+        knowledge = retrieval_result.chunks if retrieval_result.success else ""
+
+        # Create aggregator input
+        aggregator_input = AggregatorInput(
+            parent_requirement=root_requirement,
+            child_solutions=solutions,
+            knowledge=knowledge,
+        )
+
+        return await self.aggregator.execute(aggregator_input)
 
     async def _phase_synthesis(self, hypothesis: Hypothesis, aggregated) -> ResearchPlan:
         """Phase 7: Synthesize final research plan."""
-        # TODO: Implement
         return await self.synthesizer.execute(hypothesis, aggregated)
