@@ -21,7 +21,6 @@ class SolutionStatus(str, Enum):
     """Status of the solution."""
 
     DRAFT = "draft"
-    PENDING_JUDGMENT = "pending_judgment"
     APPROVED = "approved"
     REJECTED = "rejected"
 
@@ -38,8 +37,6 @@ class Solution(BaseModel):
         source: Whether this was found or generated
         confidence: Confidence score (0-1)
         status: Current status
-        judge_votes: Voting results from solution judges
-        judge_feedback: Feedback from judges
     """
 
     id: UUID = Field(default_factory=uuid4)
@@ -49,8 +46,3 @@ class Solution(BaseModel):
     source: SolutionSource = SolutionSource.NOVEL
     confidence: float = Field(0.0, ge=0.0, le=1.0)
     status: SolutionStatus = SolutionStatus.DRAFT
-
-    # Judge results
-    judge_votes: list[bool] = Field(default_factory=list)
-    judge_scores: list[float] = Field(default_factory=list)
-    judge_feedback: list[str] = Field(default_factory=list)

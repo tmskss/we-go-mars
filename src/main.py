@@ -46,7 +46,7 @@ def run(
     # 1. Initialize the workflow orchestrator
     # 2. Run deep research agent
     # 3. Handle user clarifications (if any)
-    # 4. Run requirement decomposition with judges
+    # 4. Run requirement decomposition
     # 5. Run solver phase
     # 6. Aggregate and synthesize plan
     # 7. Output the final research plan

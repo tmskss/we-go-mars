@@ -151,22 +151,3 @@ class AgentExecutor(Executor, Generic[TInput, TOutput]):
         await ctx.send_message(result)
 
 
-class JudgeAgent(BaseAgent[TInput, TOutput]):
-    """
-    Base class for judge agents that vote on decisions.
-
-    Judge agents are designed to be run in parallel with majority voting.
-    They return a structured judgment with a boolean vote and reasoning.
-    """
-
-    def __init__(self, name: str, instructions: str, instance_id: int = 1):
-        """
-        Initialize a judge agent.
-
-        Args:
-            name: Base name for the judge
-            instructions: System instructions
-            instance_id: Instance number for parallel judging (1, 2, 3)
-        """
-        super().__init__(name=f"{name}_{instance_id}", instructions=instructions)
-        self.instance_id = instance_id

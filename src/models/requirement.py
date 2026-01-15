@@ -18,8 +18,6 @@ class RequirementStatus(str, Enum):
 
     PENDING = "pending"  # Not yet processed
     DECOMPOSING = "decomposing"  # Being broken down
-    JUDGING = "judging"  # Being evaluated by judges
-    ATOMIC = "atomic"  # Confirmed atomic by judges
     SOLVING = "solving"  # Being solved
     SOLVED = "solved"  # Solution approved
     FAILED = "failed"  # Could not be solved
@@ -40,11 +38,8 @@ class Requirement(BaseModel):
         content: Description of what needs to be achieved
         level: Depth in the tree (0 = root)
         status: Current status in the workflow
-        is_atomic: Whether judges confirmed this is atomic
-        is_feasible: Whether judges confirmed this is feasible
         children: Child requirements (if decomposed)
         solution_id: Reference to solution (if solved)
-        judge_votes: Voting results from judges
     """
 
     id: UUID = Field(default_factory=uuid4)
@@ -52,13 +47,6 @@ class Requirement(BaseModel):
     content: str
     level: int = 0
     status: RequirementStatus = RequirementStatus.PENDING
-
-    # Judge results
-    is_atomic: bool | None = None
-    is_feasible: bool | None = None
-    atomicness_votes: list[bool] = Field(default_factory=list)
-    feasibility_votes: list[bool] = Field(default_factory=list)
-    judge_feedback: list[str] = Field(default_factory=list)
 
     # Tree structure
     children: list["Requirement"] = Field(default_factory=list)
