@@ -15,11 +15,13 @@ class Settings(BaseSettings):
 
     # LLM Configuration
     openai_api_key: str = ""
-    llm_model: str = "gpt-4o"
+    llm_model: str = "gpt-4.1-mini"
     llm_temperature: float = 0.7
     llm_max_tokens: int = 4096
 
     # Qdrant Vector Database
+    qdrant_url: str = ""  # Cloud URL (takes precedence over host/port if set)
+    qdrant_api_key: str = ""
     qdrant_host: str = "localhost"
     qdrant_port: int = 6333
 
