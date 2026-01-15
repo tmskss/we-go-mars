@@ -18,15 +18,10 @@ from src.models.solution import Solution
 
 from src.agents.deep_researcher import DeepResearcherAgent
 from src.agents.requirement_decomposer import RequirementDecomposerAgent
-from src.agents.atomicness_judge import AtomicnessJudgeAgent
-from src.agents.feasibility_judge import FeasibilityJudgeAgent
 from src.agents.suggestor import SuggestorAgent
 from src.agents.proposer import ProposerAgent
-from src.agents.solution_judge import SolutionJudgeAgent
 from src.agents.aggregator import AggregatorAgent
 from src.agents.plan_synthesizer import PlanSynthesizerAgent
-
-from src.orchestration.voting import majority_vote, run_parallel_judges
 
 console = Console()
 
@@ -38,8 +33,8 @@ class ResearchWorkflow:
     Workflow Phases:
     1. Deep Research - Analyze hypothesis, generate questions
     2. Requirement Decomposition - Build requirement tree
-    3. Judging Loop - Evaluate atomicness and feasibility
-    4. Solving Loop - Generate and evaluate solutions
+    3. Context Search - Find existing solutions
+    4. Solution Generation - Generate solutions for requirements
     5. Aggregation - Combine all solutions
     6. Synthesis - Generate final research plan
     """
@@ -52,21 +47,12 @@ class ResearchWorkflow:
         self.aggregator = AggregatorAgent()
         self.synthesizer = PlanSynthesizerAgent()
 
-        # Multi-instance agents for voting (3 each)
-        self.atomicness_judges = [
-            AtomicnessJudgeAgent(i) for i in range(settings.judge_count)
-        ]
-        self.feasibility_judges = [
-            FeasibilityJudgeAgent(i) for i in range(settings.judge_count)
-        ]
+        # Multi-instance agents
         self.suggestors = [
-            SuggestorAgent(i) for i in range(settings.judge_count)
+            SuggestorAgent(i) for i in range(3)
         ]
         self.proposers = [
             ProposerAgent(i) for i in range(settings.proposer_count)
-        ]
-        self.solution_judges = [
-            SolutionJudgeAgent(i) for i in range(settings.judge_count)
         ]
 
     async def run(self, hypothesis_text: str) -> ResearchPlan:
@@ -100,29 +86,24 @@ class ResearchWorkflow:
             req_tree = await self._phase_decomposition(hypothesis)
             progress.update(task, completed=True)
 
-            # Phase 4: Judging and Refinement Loop
-            task = progress.add_task("Phase 4: Judging requirements...", total=None)
-            req_tree = await self._phase_judging(req_tree)
-            progress.update(task, completed=True)
-
-            # Phase 5: Context Search
-            task = progress.add_task("Phase 5: Searching for existing solutions...", total=None)
+            # Phase 4: Context Search
+            task = progress.add_task("Phase 4: Searching for existing solutions...", total=None)
             existing, needs_solving = await self._phase_context_search(req_tree)
             progress.update(task, completed=True)
 
-            # Phase 6: Solution Generation
-            task = progress.add_task("Phase 6: Generating solutions...", total=None)
+            # Phase 5: Solution Generation
+            task = progress.add_task("Phase 5: Generating solutions...", total=None)
             solutions = await self._phase_solving(needs_solving)
             all_solutions = existing + solutions
             progress.update(task, completed=True)
 
-            # Phase 7: Aggregation
-            task = progress.add_task("Phase 7: Aggregating solutions...", total=None)
+            # Phase 6: Aggregation
+            task = progress.add_task("Phase 6: Aggregating solutions...", total=None)
             aggregated = await self._phase_aggregation(all_solutions)
             progress.update(task, completed=True)
 
-            # Phase 8: Plan Synthesis
-            task = progress.add_task("Phase 8: Synthesizing research plan...", total=None)
+            # Phase 7: Plan Synthesis
+            task = progress.add_task("Phase 7: Synthesizing research plan...", total=None)
             plan = await self._phase_synthesis(hypothesis, aggregated)
             progress.update(task, completed=True)
 
@@ -144,29 +125,11 @@ class ResearchWorkflow:
         # TODO: Implement
         return await self.decomposer.execute(hypothesis)
 
-    async def _phase_judging(self, req_tree: RequirementTree) -> RequirementTree:
-        """
-        Phase 4: Judge requirements for atomicness and feasibility.
-
-        Loop until all requirements are atomic and feasible:
-        1. Run atomicness judges (majority vote)
-        2. Run feasibility judges (majority vote)
-        3. If failed, run suggestors and refine
-        """
-        # TODO: Implement judging loop
-        # For each requirement:
-        #   - Run 3 atomicness judges in parallel
-        #   - Take majority vote
-        #   - Run 3 feasibility judges in parallel
-        #   - Take majority vote
-        #   - If either fails, run suggestors and re-decompose
-        return req_tree
-
     async def _phase_context_search(
         self, req_tree: RequirementTree
     ) -> tuple[list[Solution], list[Requirement]]:
         """
-        Phase 5: Search for existing solutions in RAG.
+        Phase 4: Search for existing solutions in RAG.
 
         Returns:
             (existing_solutions, requirements_needing_solutions)
@@ -179,29 +142,19 @@ class ResearchWorkflow:
 
     async def _phase_solving(self, requirements: list[Requirement]) -> list[Solution]:
         """
-        Phase 6: Generate solutions for requirements.
+        Phase 5: Generate solutions for requirements.
 
-        For each requirement:
-        1. Run N proposers in parallel (each uses ToT)
-        2. Run solution judges on each proposal
-        3. Take majority vote
-        4. If rejected, retry with feedback
+        For each requirement, run N proposers in parallel (each uses ToT).
         """
         # TODO: Implement solving loop
-        # For each requirement:
-        #   - Run 3 proposers in parallel
-        #   - Collect candidate solutions
-        #   - Run 3 solution judges on best candidate
-        #   - Majority vote accept/reject
-        #   - If rejected, loop with feedback
         return []
 
     async def _phase_aggregation(self, solutions: list[Solution]):
-        """Phase 7: Aggregate all solutions."""
+        """Phase 6: Aggregate all solutions."""
         # TODO: Implement
         return await self.aggregator.execute(solutions)
 
     async def _phase_synthesis(self, hypothesis: Hypothesis, aggregated) -> ResearchPlan:
-        """Phase 8: Synthesize final research plan."""
+        """Phase 7: Synthesize final research plan."""
         # TODO: Implement
         return await self.synthesizer.execute(hypothesis, aggregated)

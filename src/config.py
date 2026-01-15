@@ -27,7 +27,6 @@ class Settings(BaseSettings):
 
     # Workflow Configuration
     max_refinement_iterations: int = 5
-    judge_count: int = 3
     proposer_count: int = 3
     tree_of_thoughts_branches: int = 3
     tree_of_thoughts_depth: int = 3
