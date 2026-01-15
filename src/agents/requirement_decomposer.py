@@ -1,36 +1,30 @@
-"""
-Requirement Decomposer Agent.
+import json
+import os
+from typing import List
 
-This agent breaks down high-level requirements into a tree structure,
-recursively decomposing until reaching atomic requirements.
-
-Owner: [ASSIGN TEAMMATE]
-"""
+from openai import AsyncOpenAI
 
 from src.agents.base import BaseAgent
 from src.models.hypothesis import Hypothesis
 from src.models.requirement import Requirement, RequirementTree
 
-SYSTEM_PROMPT = """You are a Requirement Decomposition Agent specialized in breaking down complex research goals.
+client = AsyncOpenAI()
 
-Your responsibilities:
-1. Take high-level requirements and break them into sub-requirements
-2. Continue decomposition until requirements are atomic (independently solvable)
-3. Ensure each requirement is clear, specific, and actionable
+SYSTEM_PROMPT = """You are a Requirement Decomposition Agent.
 
-Guidelines for decomposition:
-- Each atomic requirement should be solvable without depending on sibling solutions
-- Maintain clear parent-child relationships
-- Aim for 2-4 children per parent requirement
-- Stop decomposing when a requirement is specific enough to have a single, clear solution
+Take the given complex requirement and break it into 2-4 clear sub-requirements.
+Each sub-requirement should be phrased as a **question** starting with "How to..." or "What is required...".
 
-Output Format (JSON):
+Rules:
+- Do NOT provide answers, explanations, or research.
+- Stop decomposing if the requirement is already atomic.
+- Output **JSON only** in the following format:
+
 {
-    "requirement": "description of the requirement",
-    "children": [
-        {"requirement": "sub-requirement 1", "children": [...]},
-        {"requirement": "sub-requirement 2", "children": [...]}
-    ]
+  "requirements": [
+    "How to ...?",
+    "What is required to ...?"
+  ]
 }
 """
 
@@ -38,9 +32,6 @@ Output Format (JSON):
 class RequirementDecomposerAgent(BaseAgent[Hypothesis, RequirementTree]):
     """
     Decomposes requirements into a hierarchical tree structure.
-
-    Input: Hypothesis with context
-    Output: RequirementTree with all requirements
     """
 
     def __init__(self):
@@ -50,38 +41,81 @@ class RequirementDecomposerAgent(BaseAgent[Hypothesis, RequirementTree]):
         )
 
     async def execute(self, input_data: Hypothesis) -> RequirementTree:
-        """
-        Decompose the hypothesis into a requirement tree.
-
-        Args:
-            input_data: The refined hypothesis with context
-
-        Returns:
-            RequirementTree with hierarchical requirements
-        """
-        # TODO: Implement decomposition logic
-        # 1. Generate root requirements from hypothesis
-        # 2. Recursively decompose each requirement
-        # 3. Build the tree structure
-        # 4. Return for judge evaluation
+        root_text = input_data.refined_text or input_data.original_text
 
         root = Requirement(
-            content=f"Solve: {input_data.refined_text or input_data.original_text}",
+            content=f"How to {root_text.strip('?')}",
             level=0,
         )
 
-        # TODO: Replace with actual LLM-based decomposition
-        return RequirementTree(root=root, total_nodes=1, max_depth=0)
+        total_nodes = 1
+        max_depth = 1
+        MAX_LEVEL = 3
 
-    async def decompose_single(self, requirement: Requirement) -> list[Requirement]:
+        async def recurse(req: Requirement):
+            nonlocal total_nodes, max_depth
+
+            if req.level>=MAX_LEVEL: return
+
+            children = await self.decompose_single(req)
+            req.children = children
+
+            if children:
+                max_depth = max(max_depth, req.level + 1)
+
+            for child in children:
+                total_nodes += 1
+                await recurse(child)
+
+        await recurse(root)
+
+        return RequirementTree(
+            root=root,
+            total_nodes=total_nodes,
+            max_depth=max_depth,
+        )
+
+
+    async def decompose_single(self, requirement: Requirement) -> List[Requirement]:
         """
-        Decompose a single requirement into children.
+        Decompose a single requirement into child requirements.
 
         Args:
-            requirement: The requirement to decompose
+            requirement: Requirement object to decompose
 
         Returns:
-            List of child requirements
+            List[Requirement] objects (children)
         """
-        # TODO: Implement single requirement decomposition
-        raise NotImplementedError
+
+        print(f"Decomposing: {requirement.content}")
+
+        response = await client.responses.create(
+            model="gpt-4o-mini",
+            input=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": requirement.content},
+            ],
+        )
+
+        # Extract text from response
+        text = response.output_text.strip()
+
+        try:
+            # Parse the JSON list of sub-requirements
+            data = json.loads(text)
+            sub_reqs = data.get("requirements", [])
+        except Exception as e:
+            print("Error parsing model output:", e)
+            print("Raw output:", text)
+            sub_reqs = []
+
+        # Wrap strings as Requirement objects
+        children = [
+            Requirement(
+                content=sub_req.strip(),
+                level=requirement.level + 1,
+            )
+            for sub_req in sub_reqs
+        ]
+
+        return children
