@@ -40,6 +40,15 @@ uv pip install -e .
 # 5. Run the app
 python -m src.main "Your research hypothesis here"
 ```
+## Setup deep research
+```bash
+git clone https://github.com/dzhng/deep-research
+cd deep-research   
+npm install
+npm install -D dotenv dotenv-cli
+create deep-research/.env.local (on discord)
+```
+
 
 ### Using Docker
 
