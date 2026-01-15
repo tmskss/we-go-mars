@@ -24,3 +24,4 @@ class Hypothesis(BaseModel):
     clarifying_questions: list[str] = Field(default_factory=list)
     user_answers: dict[str, str] = Field(default_factory=dict)
     context: str = Field("", description="Context gathered from deep research")
+    report_path: str | None = Field(None, description="Path to the generated report")
