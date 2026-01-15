@@ -1,0 +1,141 @@
+graph TD
+    %% Phase 1: Initial Processing
+    Start([User Hypothesis]) --> DeepResearch[Deep Research Agent]
+    DeepResearch -->|Initial Context & Requirements| Questions[Generate Clarifying Questions]
+    Questions --> UserInteraction{User Provides<br/>Clarifications?}
+    UserInteraction -->|Yes| HighLevel[Generate High-Level Requirements]
+    UserInteraction -->|No| HighLevel
+    
+    %% Phase 2: Requirement Breakdown Tree
+    HighLevel --> ReqTree[Requirement Tree Breakdown]
+    
+    subgraph TreeProcessing["Parallel Tree Processing"]
+        ReqTree --> ParallelBreakdown[Parallel Requirement Decomposition]
+        
+        subgraph Judges["Parallel Judges (Majority Vote)"]
+            Judge1[Atomicness Judge 1]
+            Judge2[Atomicness Judge 2]
+            Judge3[Atomicness Judge 3]
+            Feasibility1[Feasibility Judge 1]
+            Feasibility2[Feasibility Judge 2]
+            Feasibility3[Feasibility Judge 3]
+        end
+        
+        ParallelBreakdown --> Judge1
+        ParallelBreakdown --> Judge2
+        ParallelBreakdown --> Judge3
+        ParallelBreakdown --> Feasibility1
+        ParallelBreakdown --> Feasibility2
+        ParallelBreakdown --> Feasibility3
+        
+        Judge1 --> AtomicVote[Atomicness<br/>Majority Vote]
+        Judge2 --> AtomicVote
+        Judge3 --> AtomicVote
+        
+        Feasibility1 --> FeasibleVote[Feasibility<br/>Majority Vote]
+        Feasibility2 --> FeasibleVote
+        Feasibility3 --> FeasibleVote
+        
+        AtomicVote --> VoteResult{Both Atomic<br/>& Feasible?}
+        FeasibleVote --> VoteResult
+        
+        VoteResult -->|No| Suggestors[Parallel Suggestors]
+        
+        subgraph SuggestorPool["Suggestor Pool (Majority Vote)"]
+            Sug1[Suggestor 1]
+            Sug2[Suggestor 2]
+            Sug3[Suggestor 3]
+        end
+        
+        Suggestors --> Sug1
+        Suggestors --> Sug2
+        Suggestors --> Sug3
+        
+        Sug1 --> SuggestVote[Refinement<br/>Majority Vote]
+        Sug2 --> SuggestVote
+        Sug3 --> SuggestVote
+        
+        SuggestVote --> ParallelBreakdown
+        
+        VoteResult -->|Yes| AtomicReqs[Feasible Atomic Requirements]
+    end
+    
+    %% Phase 3: Context Search & Solution Filtering
+    AtomicReqs --> ContextSearch[Search Context for Existing Solutions]
+    
+    ContextSearch --> Splitter{Solution<br/>Available?}
+    
+    Splitter -->|Yes| ExistingSolutions[Existing Solutions Pool]
+    Splitter -->|No| NeedsSolution[Requirements Needing Solutions]
+    
+    %% Phase 4: Solution Generation Loop
+    NeedsSolution --> SolutionLoop[Solution Generation Loop]
+    
+    subgraph SolverPhase["The Solver (Parallel Processing)"]
+        SolutionLoop --> ParallelProposers[Parallel Solution Proposers]
+        
+        subgraph ProposerPool["Proposer Pool"]
+            Prop1[Proposer 1<br/>N-Tree of Thoughts]
+            Prop2[Proposer 2<br/>N-Tree of Thoughts]
+            Prop3[Proposer 3<br/>N-Tree of Thoughts]
+        end
+        
+        ParallelProposers --> Prop1
+        ParallelProposers --> Prop2
+        ParallelProposers --> Prop3
+        
+        Prop1 --> Candidates1[Candidate Solutions 1]
+        Prop2 --> Candidates2[Candidate Solutions 2]
+        Prop3 --> Candidates3[Candidate Solutions 3]
+        
+        subgraph JudgePool["Solution Judge Pool"]
+            SolJudge1[Solution Judge 1]
+            SolJudge2[Solution Judge 2]
+            SolJudge3[Solution Judge 3]
+        end
+        
+        Candidates1 --> SolJudge1
+        Candidates2 --> SolJudge2
+        Candidates3 --> SolJudge3
+        
+        SolJudge1 --> SolutionVote[Solution Quality<br/>Majority Vote]
+        SolJudge2 --> SolutionVote
+        SolJudge3 --> SolutionVote
+        
+        SolutionVote --> QualityCheck{Quality<br/>Sufficient?}
+        
+        QualityCheck -->|No| SolutionLoop
+        QualityCheck -->|Yes| NewSolutions[Novel Solutions Pool]
+    end
+    
+    %% Phase 5: Aggregation & Plan Generation
+    ExistingSolutions --> Aggregator[Solution Aggregator]
+    NewSolutions --> Aggregator
+    
+    Aggregator --> PlanSynthesis[Research Plan Synthesizer]
+    
+    PlanSynthesis --> FinalPlan[📄 Research Plan with Clear Goals]
+    
+    FinalPlan --> Output([Complete Research Plan])
+    
+    %% Styling
+    style Start fill:#e1f5ff,stroke:#333
+    style DeepResearch fill:#74b9ff,stroke:#333
+    style Questions fill:#a29bfe,stroke:#333
+    style AtomicReqs fill:#55efc4,stroke:#333
+    style SolutionLoop fill:#ffeaa7,stroke:#333
+    style Aggregator fill:#fd79a8,stroke:#333
+    style Output fill:#00b894,stroke:#333
+    
+    style AtomicVote fill:#fdcb6e,stroke:#333
+    style FeasibleVote fill:#fdcb6e,stroke:#333
+    style SuggestVote fill:#fdcb6e,stroke:#333
+    style SolutionVote fill:#fdcb6e,stroke:#333
+    
+    classDef judgeStyle fill:#ff7675,stroke:#333
+    classDef suggestorStyle fill:#74b9ff,stroke:#333
+    classDef proposerStyle fill:#a29bfe,stroke:#333
+    
+    class Judge1,Judge2,Judge3,Feasibility1,Feasibility2,Feasibility3,SolJudge1,SolJudge2,SolJudge3 judgeStyle
+    class Sug1,Sug2,Sug3 suggestorStyle
+    class Prop1,Prop2,Prop3 proposerStyle
