@@ -15,7 +15,7 @@ async def run_test():
     agent = RequirementDecomposerAgent()
 
     hypothesis = Hypothesis(
-        original_text="create a spacecraft to Mars with a human crew",
+        original_text="Summarize the mission context for a crewed Mars expedition with emphasis on radiation protection: mission phases/timelines, dominant radiation hazards per phase, and current NASA/ESA/CNSA dose limits (include notable pending policy changes). Identify contingency cases that could alter exposure budgets.",
         refined_text="",
         context="",
     )

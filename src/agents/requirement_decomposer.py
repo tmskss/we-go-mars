@@ -10,22 +10,28 @@ from src.models.requirement import Requirement, RequirementTree
 
 client = AsyncOpenAI()
 
-SYSTEM_PROMPT = """You are a Requirement Decomposition Agent.
+SYSTEM_PROMPT = """You are a Recursive Research Decomposition Agent.
 
-Take the given complex requirement and break it into 2-4 clear sub-requirements.
-Each sub-requirement should be phrased as a **question** starting with "How to..." or "What is required...".
+Your goal is to determine if a given query is "Atomic" or "Complex."
+- **Atomic:** A query that is specific enough to be answered by a single Google search, a specific fact lookup, or a direct definition.
+- **Complex:** A query that requires synthesizing information from multiple distinct sub-topics or perspectives.
 
-Rules:
-- Do NOT provide answers, explanations, or research.
-- Stop decomposing if the requirement is already atomic.
-- Output **JSON only** in the following format:
+### Instructions
+1. **Analyze the Input:** specificy the current level of complexity.
+2. **If Complex:** Break the query down into 2-4 **immediate** sub-questions. Do not try to reach the bottom of the tree instantly; just identify the next logical layer of questions.
+3. **If Atomic:** Return an empty list `[]`. This signals the system to execute a search rather than decomposing further.
+4. **Context:** Ensure sub-questions are self-contained (mention the specific subject, avoid "it/they").
 
-{
-  "requirements": [
-    "How to ...?",
-    "What is required to ...?"
-  ]
-}
+### Output Format
+Output **valid JSON only**.
+
+**Example (Complex):**
+Input: "Compare the EV markets in China and the USA."
+Output: { "sub_questions": ["What is the current state of the EV market in China?", "What is the current state of the EV market in the USA?"] }
+
+**Example (Atomic):**
+Input: "What is the current state of the EV market in China?"
+Output: { "sub_questions": [] }
 """
 
 
@@ -50,7 +56,7 @@ class RequirementDecomposerAgent(BaseAgent[Hypothesis, RequirementTree]):
 
         total_nodes = 1
         max_depth = 1
-        MAX_LEVEL = 3
+        MAX_LEVEL = 4
 
         async def recurse(req: Requirement):
             nonlocal total_nodes, max_depth
@@ -103,7 +109,7 @@ class RequirementDecomposerAgent(BaseAgent[Hypothesis, RequirementTree]):
         try:
             # Parse the JSON list of sub-requirements
             data = json.loads(text)
-            sub_reqs = data.get("requirements", [])
+            sub_reqs = data.get("sub_questions", [])
         except Exception as e:
             print("Error parsing model output:", e)
             print("Raw output:", text)
