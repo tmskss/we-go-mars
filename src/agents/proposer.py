@@ -1,13 +1,12 @@
 """
 Proposer Agent for solution generation.
 
-This agent generates solution candidates by creating N solutions
-and selecting the best one using LLM evaluation.
+This agent generates a single solution for an atomic requirement
+using the provided context from the knowledge base.
 
 Owner: [ASSIGN TEAMMATE]
 """
 
-import asyncio
 from pydantic import BaseModel
 
 from src.agents.base import BaseAgent
@@ -106,18 +105,11 @@ class ProposerOutput(BaseModel):
 
 class ProposerAgent(BaseAgent[ProposerInput, ProposerOutput]):
     """
-    Generates solutions using N-solution generation and selection.
-
-    Process:
-    1. Generate N candidate solutions
-    2. Use LLM to select the best solution
-    3. Return the best solution
+    Generates a single solution for an atomic requirement.
 
     Input: Atomic requirement + context
     Output: ProposerOutput with solution
     """
-
-    N_SOLUTIONS = 3  # Number of candidate solutions to generate
 
     def __init__(self, instance_id: int = 0):
         super().__init__(
@@ -126,84 +118,28 @@ class ProposerAgent(BaseAgent[ProposerInput, ProposerOutput]):
         )
         self.instance_id = instance_id
 
-    async def _create_solution(self, knowledge: str, problem: str) -> str:
-        """Generate a single solution candidate."""
-        query = f"Knowledge: {knowledge}\n\nProblem: {problem}"
-        result = await self._agent.run(query)
-        return result.text
-
-    async def _create_solutions(
-        self, knowledge: str, problem: str
-    ) -> list[str]:
-        """Generate N solution candidates."""
-        # Generate solutions sequentially to ensure diversity
-        solutions = []
-        for _ in range(self.N_SOLUTIONS):
-            solution = await self._create_solution(knowledge, problem)
-            solutions.append(solution)
-            # Small delay to encourage diverse responses
-            await asyncio.sleep(0.25)
-        return solutions
-
-    async def _select_best_solution(
-        self, knowledge: str, problem: str, solutions: list[str]
-    ) -> int:
-        """Select the best solution from candidates using LLM."""
-        solutions_text = "\n".join(
-            [f"{i}. {s}" for i, s in enumerate(solutions)]
-        )
-        query = (
-            f"Knowledge: {knowledge}\n\n"
-            f"Problem: {problem}\n\n"
-            f"Solutions:\n{solutions_text}\n\n"
-            f"Which solution satisfies the problem the best? "
-            f"Provide only the index number of the best solution!"
-        )
-        result = await self._agent.run(query)
-
-        # Parse the index from response
-        try:
-            index = int(result.text.strip())
-            if 0 <= index < len(solutions):
-                return index
-        except ValueError:
-            pass
-
-        # Default to first solution if parsing fails
-        return 0
-
     async def execute(self, input_data: ProposerInput) -> ProposerOutput:
         """
-        Generate a solution using N-solution generation and selection.
+        Generate a solution for the given requirement.
 
         Args:
             input_data: ProposerInput containing requirement and context
 
         Returns:
-            ProposerOutput with the best solution
+            ProposerOutput with the solution
         """
         knowledge = input_data.context or "No additional context provided."
         problem = input_data.requirement.content
 
-        # Generate N candidate solutions
-        solutions = await self._create_solutions(knowledge, problem)
+        query = f"Knowledge: {knowledge}\n\nProblem: {problem}"
+        result = await self._agent.run(query)
 
-        # Select the best solution
-        best_index = await self._select_best_solution(
-            knowledge, problem, solutions
-        )
-        best_solution_text = solutions[best_index]
-
-        # Create the Solution object
         solution = Solution(
             requirement_id=input_data.requirement.id,
-            content=best_solution_text,
-            reasoning_chain=[
-                f"Generated {self.N_SOLUTIONS} candidate solutions",
-                f"Selected solution {best_index} as the best",
-            ],
+            content=result.text,
+            reasoning_chain=["Generated solution from context"],
             source=SolutionSource.NOVEL,
-            confidence=0.8,  # Base confidence, can be adjusted
+            confidence=0.8,
         )
 
         return ProposerOutput(solution=solution)
