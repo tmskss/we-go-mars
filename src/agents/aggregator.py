@@ -289,7 +289,7 @@ class AggregatorAgent(BaseAgent[AggregatorInput, AggregatorOutput]):
         gap_penalty = len(gaps) * 0.1
         confidence = max(0.3, base_confidence - gap_penalty)
 
-        # Create the combined Solution object
+        # Create the combined Solution object with aggregation tracking
         solution = Solution(
             requirement_id=input_data.parent_requirement.id,
             content=best_solution_text,
@@ -301,6 +301,8 @@ class AggregatorAgent(BaseAgent[AggregatorInput, AggregatorOutput]):
             ],
             source=SolutionSource.NOVEL,
             confidence=confidence,
+            is_aggregated=True,
+            child_solution_ids=[sol.id for sol in input_data.child_solutions],
         )
 
         # Create synthesis explanation

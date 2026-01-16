@@ -7,13 +7,13 @@ from hypothesis to final research plan.
 Owner: [ASSIGN TEAMMATE]
 """
 
-import asyncio
+from uuid import UUID
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from src.config import settings
 from src.models.hypothesis import Hypothesis
-from src.models.requirement import Requirement, RequirementTree
+from src.models.requirement import Requirement, RequirementGraph, RequirementStatus
 from src.models.research_plan import ResearchPlan
 from src.models.solution import Solution, SolutionSource
 
@@ -33,11 +33,9 @@ class ResearchWorkflow:
 
     Workflow Phases:
     1. Deep Research - Analyze hypothesis, generate questions
-    2. Requirement Decomposition - Build requirement tree
-    3. Context Search - Find existing solutions
-    4. Solution Generation - Generate solutions for requirements
-    5. Aggregation - Combine all solutions
-    6. Synthesis - Generate final research plan
+    2. Requirement Decomposition - Build requirement graph with deduplication
+    3. Bottom-up Solving - Level-by-level solving from leaves to root
+    4. Synthesis - Generate final research plan
     """
 
     def __init__(self):
@@ -77,30 +75,28 @@ class ResearchWorkflow:
                 hypothesis = await self._phase_clarification(hypothesis)
                 progress.update(task, completed=True)
 
-            # Phase 3: Requirement Decomposition
+            # Phase 3: Requirement Decomposition (now builds graph with deduplication)
             task = progress.add_task("Phase 3: Decomposing requirements...", total=None)
-            req_tree = await self._phase_decomposition(hypothesis)
+            req_graph = await self._phase_decomposition(hypothesis)
             progress.update(task, completed=True)
 
-            # Phase 4: Context Search
-            task = progress.add_task("Phase 4: Searching for existing solutions...", total=None)
-            existing, needs_solving = await self._phase_context_search(req_tree)
+            console.print(
+                f"[green]Graph built: {req_graph.total_nodes} nodes, "
+                f"{req_graph.shared_count} shared, "
+                f"max depth {req_graph.max_depth}[/green]"
+            )
+
+            # Phase 4: Bottom-up Solving (combines context search, solving, aggregation)
+            task = progress.add_task("Phase 4: Bottom-up solving...", total=None)
+            solutions = await self._phase_bottom_up_solving(req_graph)
             progress.update(task, completed=True)
 
-            # Phase 5: Solution Generation
-            task = progress.add_task("Phase 5: Generating solutions...", total=None)
-            solutions = await self._phase_solving(needs_solving)
-            all_solutions = existing + solutions
-            progress.update(task, completed=True)
+            # Root solution is the final aggregation
+            root_solution = solutions.get(req_graph.root_id)
 
-            # Phase 6: Aggregation
-            task = progress.add_task("Phase 6: Aggregating solutions...", total=None)
-            aggregated = await self._phase_aggregation(req_tree.root, all_solutions)
-            progress.update(task, completed=True)
-
-            # Phase 7: Plan Synthesis
-            task = progress.add_task("Phase 7: Synthesizing research plan...", total=None)
-            plan = await self._phase_synthesis(hypothesis, aggregated)
+            # Phase 5: Plan Synthesis
+            task = progress.add_task("Phase 5: Synthesizing research plan...", total=None)
+            plan = await self._phase_synthesis(hypothesis, root_solution)
             progress.update(task, completed=True)
 
         return plan
@@ -115,50 +111,48 @@ class ResearchWorkflow:
         # For hackathon, might skip or use defaults
         return hypothesis
 
-    async def _phase_decomposition(self, hypothesis: Hypothesis) -> RequirementTree:
-        """Phase 3: Decompose into requirement tree."""
+    async def _phase_decomposition(self, hypothesis: Hypothesis) -> RequirementGraph:
+        """Phase 3: Decompose into requirement graph with deduplication."""
         return await self.decomposer.execute(hypothesis)
 
-    def _get_atomic_requirements(self, req_tree: RequirementTree) -> list[Requirement]:
+    async def _phase_bottom_up_solving(
+        self,
+        graph: RequirementGraph,
+    ) -> dict[UUID, Solution]:
         """
-        Get all atomic (leaf) requirements from the tree.
+        Phase 4: Bottom-up solving from leaves to root.
 
-        Traverses the tree to find all requirements without children.
-        """
-        atomic = []
+        Process:
+        1. Solve all atomic (leaf) requirements
+        2. For each level from max_depth-1 to 0:
+           - Aggregate child solutions for each node
+        3. Root solution is final aggregation
 
-        def traverse(req: Requirement):
-            if not req.children:
-                # Leaf node = atomic requirement
-                atomic.append(req)
-            else:
-                for child in req.children:
-                    traverse(child)
+        CRITICAL: When a shared node gets solved, ALL parents reference
+        the SAME solution (no redundant computation).
 
-        traverse(req_tree.root)
-        return atomic
-
-    async def _phase_context_search(
-        self, req_tree: RequirementTree
-    ) -> tuple[list[Solution], list[Requirement]]:
-        """
-        Phase 4: Search for existing solutions in RAG.
-
-        For each atomic requirement:
-        1. Use RetrieverAgent to search literature
-        2. If relevant content found, create an existing solution
-        3. Otherwise, mark requirement as needing novel solution
+        Args:
+            graph: RequirementGraph with hierarchical structure
 
         Returns:
-            (existing_solutions, requirements_needing_solutions)
+            Dictionary mapping requirement IDs to solutions
         """
-        atomic_reqs = self._get_atomic_requirements(req_tree)
+        solutions: dict[UUID, Solution] = {}
 
-        existing_solutions: list[Solution] = []
-        needs_solving: list[Requirement] = []
+        # Step 1: Solve atomic requirements (leaves)
+        atomic_reqs = graph.get_atomic_requirements()
+        console.print(f"[blue]Solving {len(atomic_reqs)} atomic requirements...[/blue]")
 
         for req in atomic_reqs:
-            # Search for existing knowledge
+            # Skip if already solved (shared node processed earlier)
+            if req.id in solutions:
+                console.print(
+                    f"[yellow]Skipping shared node (already solved): "
+                    f"{req.content[:40]}...[/yellow]"
+                )
+                continue
+
+            # Check RAG for existing solution
             retrieval_result = await self.retriever.execute(
                 RetrieverAgentInput(query=req.content, top_k=5)
             )
@@ -174,63 +168,79 @@ class ResearchWorkflow:
                     source=SolutionSource.EXISTING,
                     confidence=0.7,
                 )
-                existing_solutions.append(solution)
             else:
-                # No relevant knowledge found - needs novel solution
-                needs_solving.append(req)
+                # Generate novel solution
+                context = retrieval_result.chunks if retrieval_result.success else ""
+                proposer = self.proposers[0]
+                result = await proposer.execute(
+                    ProposerInput(requirement=req, context=context)
+                )
+                solution = result.solution
 
-        return existing_solutions, needs_solving
+            solutions[req.id] = solution
+            req.solution_id = solution.id
+            req.status = RequirementStatus.SOLVED
 
-    async def _phase_solving(self, requirements: list[Requirement]) -> list[Solution]:
-        """
-        Phase 5: Generate solutions for requirements.
+        # Step 2: Bottom-up aggregation level by level
+        for level in range(graph.max_depth - 1, -1, -1):
+            level_nodes = graph.get_level_nodes(level)
+            non_leaf_nodes = [n for n in level_nodes if graph.get_children(n.id)]
 
-        For each requirement:
-        1. Get context via RetrieverAgent
-        2. Run proposer to generate solution
-        """
-        solutions: list[Solution] = []
+            if non_leaf_nodes:
+                console.print(
+                    f"[blue]Aggregating {len(non_leaf_nodes)} nodes at level {level}...[/blue]"
+                )
 
-        for req in requirements:
-            # Get context for the requirement
-            retrieval_result = await self.retriever.execute(
-                RetrieverAgentInput(query=req.content, top_k=5)
-            )
-            context = retrieval_result.chunks if retrieval_result.success else ""
+            for node in non_leaf_nodes:
+                # Skip if already solved (shouldn't happen, but safety check)
+                if node.id in solutions:
+                    continue
 
-            # Use first proposer (we have multiple for parallel solving if needed)
-            proposer = self.proposers[0]
-            proposer_input = ProposerInput(requirement=req, context=context)
-            result = await proposer.execute(proposer_input)
+                # Get children's solutions
+                children = graph.get_children(node.id)
+                child_solutions = [
+                    solutions[child.id]
+                    for child in children
+                    if child.id in solutions
+                ]
 
-            solutions.append(result.solution)
+                if not child_solutions:
+                    console.print(
+                        f"[red]Warning: No child solutions for {node.content[:40]}...[/red]"
+                    )
+                    continue
+
+                # Deduplicate solutions (shared nodes may appear multiple times)
+                seen_ids = set()
+                unique_solutions = []
+                for sol in child_solutions:
+                    if sol.id not in seen_ids:
+                        unique_solutions.append(sol)
+                        seen_ids.add(sol.id)
+
+                # Get additional context
+                retrieval_result = await self.retriever.execute(
+                    RetrieverAgentInput(query=node.content, top_k=5)
+                )
+                knowledge = retrieval_result.chunks if retrieval_result.success else ""
+
+                # Aggregate
+                agg_result = await self.aggregator.execute(
+                    AggregatorInput(
+                        parent_requirement=node,
+                        child_solutions=unique_solutions,
+                        knowledge=knowledge,
+                    )
+                )
+
+                solutions[node.id] = agg_result.solution
+                node.solution_id = agg_result.solution.id
+                node.status = RequirementStatus.SOLVED
 
         return solutions
 
-    async def _phase_aggregation(
-        self, root_requirement: Requirement, solutions: list[Solution]
-    ):
-        """
-        Phase 6: Aggregate all solutions.
-
-        Currently performs single-level aggregation of all atomic solutions.
-        Future: Hierarchical tree traversal when requirement decomposition is finalized.
-        """
-        # Get additional context for the root problem
-        retrieval_result = await self.retriever.execute(
-            RetrieverAgentInput(query=root_requirement.content, top_k=5)
-        )
-        knowledge = retrieval_result.chunks if retrieval_result.success else ""
-
-        # Create aggregator input
-        aggregator_input = AggregatorInput(
-            parent_requirement=root_requirement,
-            child_solutions=solutions,
-            knowledge=knowledge,
-        )
-
-        return await self.aggregator.execute(aggregator_input)
-
-    async def _phase_synthesis(self, hypothesis: Hypothesis, aggregated) -> ResearchPlan:
-        """Phase 7: Synthesize final research plan."""
-        return await self.synthesizer.execute(hypothesis, aggregated)
+    async def _phase_synthesis(
+        self, hypothesis: Hypothesis, root_solution: Solution | None
+    ) -> ResearchPlan:
+        """Phase 5: Synthesize final research plan."""
+        return await self.synthesizer.execute(hypothesis, root_solution)

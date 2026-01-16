@@ -1,12 +1,25 @@
+"""
+Requirement Decomposer Agent.
+
+Decomposes requirements into a hierarchical graph structure with
+semantic deduplication for shared atomic nodes.
+
+Owner: [ASSIGN TEAMMATE]
+"""
+
 import json
-import os
 from typing import List
 
 from openai import AsyncOpenAI
 
 from src.agents.base import BaseAgent
+from src.agents.similarity_checker import (
+    SimilarityCheckerAgent,
+    SimilarityCheckerInput,
+)
 from src.models.hypothesis import Hypothesis
-from src.models.requirement import Requirement, RequirementTree
+from src.models.requirement import Requirement, RequirementGraph
+from src.rag.requirement_store import RequirementStore
 
 client = AsyncOpenAI()
 
@@ -35,64 +48,132 @@ Output: { "sub_questions": [] }
 """
 
 
-class RequirementDecomposerAgent(BaseAgent[Hypothesis, RequirementTree]):
+class RequirementDecomposerAgent(BaseAgent[Hypothesis, RequirementGraph]):
     """
-    Decomposes requirements into a hierarchical tree structure.
+    Decomposes requirements into a hierarchical graph structure with deduplication.
+
+    Key features:
+    - Graph structure allowing shared atomic nodes
+    - Semantic deduplication via RequirementStore
+    - Level-based crossover constraint (only match at child level)
     """
 
-    def __init__(self):
+    MAX_LEVEL = 4
+
+    def __init__(
+        self,
+        top_k_candidates: int = 5,
+        similarity_threshold: float = 0.75,
+    ):
+        """
+        Initialize the decomposer agent.
+
+        Args:
+            top_k_candidates: Number of candidates to retrieve for deduplication
+            similarity_threshold: Minimum similarity score for candidates
+        """
         super().__init__(
             name="requirement_decomposer",
             instructions=SYSTEM_PROMPT,
         )
+        self.requirement_store = RequirementStore()
+        self.similarity_checker = SimilarityCheckerAgent()
+        self.top_k_candidates = top_k_candidates
+        self.similarity_threshold = similarity_threshold
 
-    async def execute(self, input_data: Hypothesis) -> RequirementTree:
+    async def execute(self, input_data: Hypothesis) -> RequirementGraph:
+        """
+        Execute decomposition with deduplication.
+
+        Args:
+            input_data: Hypothesis to decompose
+
+        Returns:
+            RequirementGraph with hierarchical structure and shared nodes
+        """
+        # Clear store for new session
+        self.requirement_store.clear()
+
         root_text = input_data.refined_text or input_data.original_text
-
         root = Requirement(
             content=f"How to {root_text.strip('?')}",
             level=0,
+            parent_ids=[],
         )
 
-        total_nodes = 1
-        max_depth = 1
-        MAX_LEVEL = 4
+        # Initialize graph
+        graph = RequirementGraph(root_id=root.id)
+        graph.add_node(root)
+
+        # Index root requirement
+        self.requirement_store.add_requirement(root)
 
         async def recurse(req: Requirement):
-            nonlocal total_nodes, max_depth
+            if req.level >= self.MAX_LEVEL:
+                return
 
-            if req.level>=MAX_LEVEL: return
+            # Decompose into sub-questions (returns content strings)
+            raw_children = await self.decompose_single(req)
 
-            children = await self.decompose_single(req)
-            req.children = children
+            for child_content in raw_children:
+                child_level = req.level + 1
 
-            if children:
-                max_depth = max(max_depth, req.level + 1)
+                # Search for similar at child_level ONLY (level constraint)
+                candidates = self.requirement_store.find_similar(
+                    content=child_content,
+                    level=child_level,
+                    top_k=self.top_k_candidates,
+                    score_threshold=self.similarity_threshold,
+                )
 
-            for child in children:
-                total_nodes += 1
+                if candidates:
+                    # Use SimilarityCheckerAgent to decide
+                    result = await self.similarity_checker.execute(
+                        SimilarityCheckerInput(
+                            new_content=child_content,
+                            candidates=candidates,
+                        )
+                    )
+
+                    if result.has_match and result.matched_id:
+                        # Link to existing node (deduplication)
+                        graph.link_existing_child(req.id, result.matched_id)
+                        print(
+                            f"[DEDUP] Reusing existing node for: "
+                            f"{child_content[:50]}..."
+                        )
+                        print(f"[DEDUP] Reason: {result.reason}")
+                        # Don't recurse - already decomposed
+                        continue
+
+                # No match: create new node
+                child = Requirement(
+                    content=child_content.strip(),
+                    level=child_level,
+                    parent_ids=[req.id],
+                )
+                graph.add_child(req.id, child)
+                self.requirement_store.add_requirement(child)
+
                 await recurse(child)
 
         await recurse(root)
 
-        return RequirementTree(
-            root=root,
-            total_nodes=total_nodes,
-            max_depth=max_depth,
-        )
+        # Update atomic count
+        graph.get_atomic_requirements()
 
+        return graph
 
-    async def decompose_single(self, requirement: Requirement) -> List[Requirement]:
+    async def decompose_single(self, requirement: Requirement) -> List[str]:
         """
-        Decompose a single requirement into child requirements.
+        Decompose a single requirement into sub-questions.
 
         Args:
             requirement: Requirement object to decompose
 
         Returns:
-            List[Requirement] objects (children)
+            List of content strings (not Requirement objects)
         """
-
         print(f"Decomposing: {requirement.content}")
 
         response = await client.responses.create(
@@ -109,19 +190,8 @@ class RequirementDecomposerAgent(BaseAgent[Hypothesis, RequirementTree]):
         try:
             # Parse the JSON list of sub-requirements
             data = json.loads(text)
-            sub_reqs = data.get("sub_questions", [])
+            return data.get("sub_questions", [])
         except Exception as e:
             print("Error parsing model output:", e)
             print("Raw output:", text)
-            sub_reqs = []
-
-        # Wrap strings as Requirement objects
-        children = [
-            Requirement(
-                content=sub_req.strip(),
-                level=requirement.level + 1,
-            )
-            for sub_req in sub_reqs
-        ]
-
-        return children
+            return []

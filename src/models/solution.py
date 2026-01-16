@@ -27,16 +27,21 @@ class SolutionStatus(str, Enum):
 
 class Solution(BaseModel):
     """
-    A solution to an atomic requirement.
+    A solution to a requirement.
+
+    For graph structure: A single solution can satisfy multiple parent requirements
+    when the underlying requirement is shared (deduplicated).
 
     Attributes:
         id: Unique identifier
-        requirement_id: The atomic requirement this solves
+        requirement_id: The primary requirement this solves
         content: The solution text
         reasoning_chain: Steps from Tree of Thoughts reasoning
         source: Whether this was found or generated
         confidence: Confidence score (0-1)
         status: Current status
+        is_aggregated: Whether this is a combined solution from children
+        child_solution_ids: IDs of child solutions (if aggregated)
     """
 
     id: UUID = Field(default_factory=uuid4)
@@ -46,3 +51,5 @@ class Solution(BaseModel):
     source: SolutionSource = SolutionSource.NOVEL
     confidence: float = Field(0.0, ge=0.0, le=1.0)
     status: SolutionStatus = SolutionStatus.DRAFT
+    is_aggregated: bool = False
+    child_solution_ids: list[UUID] = Field(default_factory=list)

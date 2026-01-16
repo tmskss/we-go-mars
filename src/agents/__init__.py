@@ -19,6 +19,11 @@ from src.agents.retriever import (
     RetrieverAgentInput,
     RetrieverAgentOutput,
 )
+from src.agents.similarity_checker import (
+    SimilarityCheckerAgent,
+    SimilarityCheckerInput,
+    SimilarityCheckerOutput,
+)
 
 __all__ = [
     "BaseAgent",
@@ -36,4 +41,7 @@ __all__ = [
     "RetrieverAgent",
     "RetrieverAgentInput",
     "RetrieverAgentOutput",
+    "SimilarityCheckerAgent",
+    "SimilarityCheckerInput",
+    "SimilarityCheckerOutput",
 ]
