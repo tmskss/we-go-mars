@@ -1,0 +1,73 @@
+# LLM Prompt Tree – Module 4: Dosimetry, Monitoring & Forecasting `[P0|MM]`
+
+## 4. Dosimetry, Monitoring, and Forecasting
+
+- **4.1 Instrumentation**
+  - 4.1.1 Which personal dosimeters provide real-time LET spectra and alarm thresholds?
+    - 4.1.1.1 What are their mass, power, and interface requirements?
+      - 4.1.1.1.1 How do these compare to EVA suit power budgets?
+      - 4.1.1.1.2 What mounting options (belt, wrist, embedded) are feasible?
+    - 4.1.1.2 How do they integrate with crew health monitoring systems?
+    - 4.1.1.3 How is calibration drift detected and corrected in flight?
+  - 4.1.2 What neutron detectors best monitor regolith-covered habitats (TEPCs, Bonner spheres)?
+    - 4.1.2.1 How sensitive are detectors to thermal vs fast neutrons?
+    - 4.1.2.2 What shielding or moderation do detectors need themselves?
+    - 4.1.2.3 How are detectors deployed spatially within habitats?
+  - 4.1.3 How can distributed sensors (Timepix, silicon diodes) be networked with avionics?
+    - 4.1.3.1 What data rates and bus standards (CAN, SpaceWire) are required?
+    - 4.1.3.2 How is redundancy ensured if nodes fail?
+    - 4.1.3.3 How is data buffered when telemetry is interrupted?
+  - 4.1.4 What calibration protocols are required before flight and during mission?
+    - 4.1.4.1 Which ground facilities provide calibration sources?
+    - 4.1.4.2 How are in-flight calibrations performed (reference sources, cross-calibration)?
+    - 4.1.4.3 What documentation is required for certification?
+  - 4.1.5 How can dosimetry be miniaturized for EVA suits without sacrificing accuracy?
+    - 4.1.5.1 What power constraints apply to suit-integrated sensors?
+    - 4.1.5.2 How do sensors withstand temperature swings and flexing?
+    - 4.1.5.3 How is data relayed through suit communications systems?
+
+- **4.2 Data Processing**
+  - 4.2.1 Which transport tools (HZETRN/OCT, OLTARIS, PHITS, GEANT4) support rapid mission analysis?
+    - 4.2.1.1 What inputs (geometry, spectra) do they require?
+    - 4.2.1.2 How do runtime and fidelity compare among tools?
+    - 4.2.1.3 How can results be cross-checked for consistency?
+  - 4.2.2 How can sensor data be fused with heliophysics models (ENLIL, WSA) for prediction?
+    - 4.2.2.1 What APIs or data standards enable integration?
+    - 4.2.2.2 How can machine learning enhance forecast accuracy?
+    - 4.2.2.3 What validation metrics ensure reliable automated predictions?
+  - 4.2.3 What uncertainty quantification techniques (Bayesian, Monte Carlo) are standard?
+    - 4.2.3.1 How are environmental and material uncertainties propagated?
+    - 4.2.3.2 What confidence intervals accompany mission dose projections?
+    - 4.2.3.3 How can LLMs help explain uncertainty to non-specialists?
+  - 4.2.4 How can LLMs transform technical outputs into human-friendly advisories?
+    - 4.2.4.1 What summarization prompts generate concise risk statements?
+      - 4.2.4.1.1 How can prompts be structured to include numeric thresholds?
+      - 4.2.4.1.2 What guardrails detect hallucinated data in summaries?
+    - 4.2.4.2 How can models tailor messaging for crew vs mission control?
+    - 4.2.4.3 How are hallucination risks mitigated in safety-critical messaging?
+  - 4.2.5 What telemetry bandwidth is required for real-time radiation monitoring?
+    - 4.2.5.1 How much data do sensor networks generate per hour?
+    - 4.2.5.2 What compression or prioritization schemes conserve bandwidth?
+    - 4.2.5.3 How can local edge processing reduce data volume?
+
+- **4.3 Operational Alerts**
+  - 4.3.1 What dose-rate or cumulative thresholds trigger storm-shelter procedures?
+    - 4.3.1.1 How do thresholds differ for transit vs surface operations?
+    - 4.3.1.2 What hysteresis prevents rapid oscillation between alert states?
+    - 4.3.1.3 How are thresholds adjusted for equipment anomalies?
+  - 4.3.2 How should automated alerts escalate from caution to critical response?
+    - 4.3.2.1 What roles do crew, onboard AI, and ground control play in escalation?
+    - 4.3.2.2 How are false positives managed to avoid alert fatigue?
+    - 4.3.2.3 How can small models generate concise, actionable alert messages?
+  - 4.3.3 What manual backup procedures exist if communication links fail?
+    - 4.3.3.1 What printed or onboard references guide manual decision-making?
+    - 4.3.3.2 How can visual/audible alarms be triggered independently of comms?
+    - 4.3.3.3 How are crew roles assigned for manual monitoring?
+  - 4.3.4 How can small language models summarize alert status for crew tablets?
+    - 4.3.4.1 What context must be provided to avoid misinterpretation?
+    - 4.3.4.2 How often should summaries be refreshed during events?
+    - 4.3.4.3 How can multilingual or accessibility needs be met?
+  - 4.3.5 How can simulation drills validate alert timing and crew response?
+    - 4.3.5.1 What scenarios (SPE, instrument failure) should be rehearsed?
+    - 4.3.5.2 How are drill outcomes captured for continuous improvement?
+    - 4.3.5.3 How can LLMs generate scenario scripts or debrief summaries?

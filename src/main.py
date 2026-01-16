@@ -67,11 +67,120 @@ def run(
 
 @app.command()
 def ingest(
-    path: str = typer.Argument(..., help="Path to paper or directory"),
+    path: str = typer.Argument("data", help="Path to markdown file or directory (default: data/)"),
+    skip_existing: bool = typer.Option(False, "--skip-existing", help="Skip files already in the knowledge base"),
+    batch_size: int = typer.Option(10, "--batch-size", help="Files to process before logging progress"),
+    dry_run: bool = typer.Option(False, "--dry-run", help="List files without actually ingesting"),
 ) -> None:
-    """Ingest papers into the RAG knowledge base."""
-    # TODO: Implement paper ingestion
-    console.print(f"[red]TODO: Implement paper ingestion for {path}[/red]")
+    """
+    Ingest markdown files into the RAG knowledge base.
+
+    This command recursively finds all .md files in the specified path and ingests
+    them into the Qdrant vector database with hybrid (dense + sparse) embeddings.
+
+    Examples:
+        python -m src.main ingest
+        python -m src.main ingest data/specs
+        python -m src.main ingest --skip-existing --batch-size 5
+    """
+    from pathlib import Path
+    from src.rag.literature_store import LiteratureStore
+
+    path_obj = Path(path)
+
+    # Check if path exists
+    if not path_obj.exists():
+        console.print(f"[red]Error: Path not found: {path}[/red]")
+        raise typer.Exit(1)
+
+    try:
+        store = LiteratureStore()
+
+        # Handle single file vs directory
+        if path_obj.is_file():
+            if not path_obj.suffix == ".md":
+                console.print(f"[yellow]Warning: {path} is not a markdown file (.md)[/yellow]")
+                raise typer.Exit(1)
+
+            console.print(f"[blue]Ingesting single file: {path}[/blue]\n")
+
+            if dry_run:
+                console.print(f"[yellow]DRY RUN: Would ingest {path}[/yellow]")
+                return
+
+            document = store.ingest_file(str(path_obj))
+            chunks = store._chunk_markdown(document)
+
+            console.print(f"[green]✓ Successfully ingested {len(chunks)} chunks from {path_obj.name}[/green]")
+
+        else:
+            # Directory ingestion - find all markdown files
+            md_files = list(path_obj.rglob("*.md"))
+
+            if not md_files:
+                console.print(f"[yellow]No markdown files found in {path}[/yellow]")
+                return
+
+            console.print(f"[blue]Found {len(md_files)} markdown files in {path}[/blue]\n")
+
+            if dry_run:
+                console.print("[yellow]DRY RUN: Would ingest the following files:[/yellow]")
+                for md_file in sorted(md_files):
+                    console.print(f"  - {md_file.relative_to(path_obj.parent)}")
+                return
+
+            # Batch ingestion with progress
+            stats = {
+                "total": len(md_files),
+                "success": 0,
+                "failed": 0,
+                "chunks": 0,
+            }
+
+            console.print(f"[blue]Starting ingestion of {len(md_files)} files...[/blue]\n")
+
+            for idx, md_file in enumerate(sorted(md_files), 1):
+                try:
+                    relative_path = md_file.relative_to(path_obj.parent)
+                    console.print(f"[{idx}/{len(md_files)}] Ingesting: {relative_path}")
+
+                    document = store.ingest_file(str(md_file))
+                    chunks = store._chunk_markdown(document)
+                    num_chunks = len(chunks)
+
+                    stats["success"] += 1
+                    stats["chunks"] += num_chunks
+
+                    console.print(f"  [green]✓ {num_chunks} chunks[/green]")
+
+                    # Progress update every batch_size files
+                    if idx % batch_size == 0:
+                        console.print(f"\n[cyan]--- Progress: {idx}/{len(md_files)} files processed ---[/cyan]\n")
+
+                except Exception as e:
+                    stats["failed"] += 1
+                    console.print(f"  [red]✗ Failed: {e}[/red]")
+
+            # Final summary
+            console.print(f"\n{'='*60}")
+            console.print("[bold green]INGESTION COMPLETE[/bold green]")
+            console.print(f"{'='*60}")
+            console.print(f"Total files:          {stats['total']}")
+            console.print(f"[green]Successfully ingested: {stats['success']}[/green]")
+            console.print(f"[red]Failed:               {stats['failed']}[/red]")
+            console.print(f"Total chunks created: {stats['chunks']}")
+            console.print(f"{'='*60}\n")
+
+            if stats["failed"] > 0:
+                raise typer.Exit(1)
+
+    except KeyboardInterrupt:
+        console.print("\n[yellow]Ingestion interrupted by user[/yellow]")
+        raise typer.Exit(130)
+
+    except Exception as e:
+        console.print(f"[red]Error during ingestion: {e}[/red]")
+        raise typer.Exit(1)
 
 
 if __name__ == "__main__":

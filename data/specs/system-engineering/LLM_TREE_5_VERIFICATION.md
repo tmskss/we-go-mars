@@ -1,0 +1,71 @@
+# LLM Prompt Tree – Module 5: Verification, Validation & Risk `[P1|MM]`
+
+## 5. Verification, Validation, and Risk
+
+- **5.1 Analysis & Testing**
+  - 5.1.1 Which beamline facilities (NSRL, HIMAC, FAIR/GSI) support shielding tests?
+    - 5.1.1.1 What ion species and energies are available at each facility?
+    - 5.1.1.2 What sample sizes and test durations can be accommodated?
+      - 5.1.1.2.1 What fixture designs support large-area habitat panels?
+      - 5.1.1.2.2 How many runs are needed for statistical confidence?
+    - 5.1.1.3 How are logistics (cost, scheduling) managed for campaigns?
+  - 5.1.2 How should material attenuation results be correlated with transport simulations?
+    - 5.1.2.1 What validation metrics (dose, LET, spectra) should be compared?
+    - 5.1.2.2 How are discrepancies investigated and resolved?
+    - 5.1.2.3 How can LLMs assist in documenting correlation results?
+  - 5.1.3 What ground mockups (storm shelter, habitat wall sections) need testing?
+    - 5.1.3.1 Which analog missions (HI-SEAS, SIRIUS) support integrated testing?
+    - 5.1.3.2 What instrumentation should be embedded within mockups?
+    - 5.1.3.3 How are test data extrapolated to full-scale configurations?
+  - 5.1.4 How are instrumentation calibrations verified pre- and in-flight?
+    - 5.1.4.1 What reference sources (Co-60, AmBe) are used?
+    - 5.1.4.2 How often must calibration be repeated during the mission?
+    - 5.1.4.3 How are calibration records archived for certification?
+  - 5.1.5 What inspection methods assess regolith berm density and stability?
+    - 5.1.5.1 Can ground-penetrating radar or neutron probes be employed?
+    - 5.1.5.2 How do temperature and moisture gradients affect measurements?
+    - 5.1.5.3 What acceptance criteria define berm readiness?
+
+- **5.2 Risk Management**
+  - 5.2.1 What radiation-related risks appear in current exploration roadmaps?
+    - 5.2.1.1 Which risks carry the highest residual severity?
+    - 5.2.1.2 How are risks tracked across international partnerships?
+    - 5.2.1.3 What triggers re-baselining of shielding design?
+  - 5.2.2 Which mitigations address probability vs. consequence of each risk?
+    - 5.2.2.1 How effective are material vs operational mitigations?
+    - 5.2.2.2 What cost and mass trades accompany each mitigation?
+    - 5.2.2.3 How are mitigations prioritized in program risk boards?
+  - 5.2.3 How can LLMs assist in updating radiation risk registers and mitigation status?
+    - 5.2.3.1 What data sources (logs, telemetry, reports) feed automated updates?
+    - 5.2.3.2 How can models flag missing documentation or overdue mitigations?
+    - 5.2.3.3 How are security and accuracy maintained in automated summaries?
+  - 5.2.4 What contingency plans exist for storm shelter failure or dosimetry outage?
+    - 5.2.4.1 How quickly can additional mass be repositioned to reinforce shielding?
+    - 5.2.4.2 What manual dosimetry tools serve as backups?
+    - 5.2.4.3 How are crew responsibilities redistributed during anomalies?
+  - 5.2.5 How is risk communicated to crew and mission control in real time?
+    - 5.2.5.1 What visualization dashboards support decision-making?
+    - 5.2.5.2 How can LLMs tailor messaging for different stakeholders?
+    - 5.2.5.3 How are risk communications rehearsed and validated?
+
+- **5.3 Post-Mission Learning**
+  - 5.3.1 How should dosimetry data be archived and correlated with biomedical records?
+    - 5.3.1.1 What data formats and metadata standards are required?
+    - 5.3.1.2 How is privacy maintained while enabling research access?
+    - 5.3.1.3 How can LLMs assist in indexing and querying archives?
+  - 5.3.2 What metrics evaluate shielding effectiveness (dose margins, downtime, mass efficiency)?
+    - 5.3.2.1 How are mission dose budgets compared to actual exposure?
+    - 5.3.2.2 What cost/benefit ratios measure shielding mass efficiency?
+    - 5.3.2.3 How are operational metrics (alert frequency, shelter occupancy) included?
+  - 5.3.3 How can lessons feed into requirement updates or design adjustments?
+    - 5.3.3.1 What configuration control processes capture lessons learned?
+    - 5.3.3.2 How can LLMs draft requirement change proposals?
+    - 5.3.3.3 How are updates communicated across international partners?
+  - 5.3.4 How are supplier performance and material quality fed back into procurement decisions?
+    - 5.3.4.1 What metrics track supplier reliability and quality?
+    - 5.3.4.2 How are audit findings incorporated into future solicitations?
+    - 5.3.4.3 How can LLMs monitor contract deliverables against expectations?
+  - 5.3.5 How can small models automate after-action reporting for radiation events?
+    - 5.3.5.1 What data inputs (telemetry, crew logs) are required?
+    - 5.3.5.2 How can templates ensure consistent reporting?
+    - 5.3.5.3 How are reports reviewed for accuracy before distribution?
