@@ -216,6 +216,44 @@ class RequirementGraph(BaseModel):
         node_ids = self.levels.get(level, [])
         return [self.nodes[nid] for nid in node_ids if nid in self.nodes]
 
+    def save_to_file(self, file_path: str) -> None:
+        """
+        Save the graph to a JSON file.
+
+        Args:
+            file_path: Path to save the graph
+        """
+        import json
+        from pathlib import Path
+
+        # Convert to JSON-serializable format
+        data = self.model_dump(mode="json")
+
+        # Write to file
+        path = Path(file_path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "w") as f:
+            json.dump(data, f, indent=2)
+
+    @classmethod
+    def load_from_file(cls, file_path: str) -> "RequirementGraph":
+        """
+        Load a graph from a JSON file.
+
+        Args:
+            file_path: Path to the saved graph file
+
+        Returns:
+            RequirementGraph instance
+        """
+        import json
+        from pathlib import Path
+
+        with open(Path(file_path), "r") as f:
+            data = json.load(f)
+
+        return cls.model_validate(data)
+
 
 # Keep RequirementTree as alias for backwards compatibility
 RequirementTree = RequirementGraph

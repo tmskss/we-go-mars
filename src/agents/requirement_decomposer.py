@@ -59,7 +59,7 @@ class RequirementDecomposerAgent(BaseAgent[Hypothesis, RequirementGraph]):
     - Level-based crossover constraint (only match at child level)
     """
 
-    MAX_LEVEL = 4
+    MAX_LEVEL = 3
 
     def __init__(
         self,

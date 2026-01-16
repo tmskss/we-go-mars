@@ -61,6 +61,26 @@ async def run_test():
     print(f"Atomic nodes: {tree.atomic_count}")
     print(f"Shared nodes: {tree.shared_count}")
 
+    # Save graph to file for later visualization
+    output_file = ROOT_DIR / "outputs" / "requirement_graph.json"
+    tree.save_to_file(str(output_file))
+    print(f"\n💾 Graph saved to: {output_file}")
+
+    return tree
+
 
 if __name__ == "__main__":
-    asyncio.run(run_test())
+    import sys
+
+    tree = asyncio.run(run_test())
+
+    # Optionally create visualization
+    if "--visualize" in sys.argv:
+        try:
+            from visualize_graph import create_graph_visualization
+
+            print("\n🎨 Creating visualization...")
+            create_graph_visualization(tree)
+        except ImportError as e:
+            print(f"\n⚠️  Could not create visualization: {e}")
+            print("   Install required packages: pip install plotly networkx")
