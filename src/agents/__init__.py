@@ -11,21 +11,29 @@ References:
 from src.agents.base import BaseAgent, AgentExecutor
 from src.agents.deep_researcher import DeepResearcherAgent
 from src.agents.requirement_decomposer import RequirementDecomposerAgent
-from src.agents.suggestor import SuggestorAgent, SuggestorInput
-from src.agents.proposer import ProposerAgent, ProposerInput
-from src.agents.aggregator import AggregatorAgent
+from src.agents.proposer import ProposerAgent, ProposerInput, ProposerOutput
+from src.agents.aggregator import AggregatorAgent, AggregatorInput, AggregatorOutput
 from src.agents.plan_synthesizer import PlanSynthesizerAgent, PlanSynthesizerInput
+from src.agents.retriever import (
+    RetrieverAgent,
+    RetrieverAgentInput,
+    RetrieverAgentOutput,
+)
 
 __all__ = [
     "BaseAgent",
     "AgentExecutor",
     "DeepResearcherAgent",
     "RequirementDecomposerAgent",
-    "SuggestorAgent",
-    "SuggestorInput",
     "ProposerAgent",
     "ProposerInput",
+    "ProposerOutput",
     "AggregatorAgent",
+    "AggregatorInput",
+    "AggregatorOutput",
     "PlanSynthesizerAgent",
     "PlanSynthesizerInput",
+    "RetrieverAgent",
+    "RetrieverAgentInput",
+    "RetrieverAgentOutput",
 ]
