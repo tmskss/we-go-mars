@@ -197,7 +197,7 @@ class RequirementStore:
         )
 
         candidates = []
-        for point in results:
+        for point in results.points:
             candidates.append(
                 RequirementCandidate(
                     requirement_id=UUID(point.payload["requirement_id"]),

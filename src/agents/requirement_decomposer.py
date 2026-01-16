@@ -7,6 +7,7 @@ semantic deduplication for shared atomic nodes.
 Owner: [ASSIGN TEAMMATE]
 """
 
+import asyncio
 import json
 from typing import List
 
@@ -23,28 +24,28 @@ from src.rag.requirement_store import RequirementStore
 
 client = AsyncOpenAI()
 
-SYSTEM_PROMPT = """You are a Recursive Research Decomposition Agent.
+SYSTEM_PROMPT = """You are a Recursive Problem Decomposition Agent.
 
-Your goal is to determine if a given query is "Atomic" or "Complex."
-- **Atomic:** A query that is specific enough to be answered by a single Google search, a specific fact lookup, or a direct definition.
-- **Complex:** A query that requires synthesizing information from multiple distinct sub-topics or perspectives.
+Your goal is to determine if a given problem is "Atomic" or "Complex."
+- **Atomic:** A problem specific enough to be solved directly with existing knowledge or a single research step.
+- **Complex:** A problem requiring multiple sub-problems to be solved first.
 
 ### Instructions
-1. **Analyze the Input:** specificy the current level of complexity.
-2. **If Complex:** Break the query down into 2-4 **immediate** sub-questions. Do not try to reach the bottom of the tree instantly; just identify the next logical layer of questions.
-3. **If Atomic:** Return an empty list `[]`. This signals the system to execute a search rather than decomposing further.
-4. **Context:** Ensure sub-questions are self-contained (mention the specific subject, avoid "it/they").
+1. **Analyze the Input:** Assess the current level of complexity.
+2. **If Complex:** Break the problem down into 2-4 **immediate** sub-problems. Do not try to reach the bottom of the tree instantly; just identify the next logical layer of sub-problems.
+3. **If Atomic:** Return an empty list `[]`. This signals the system to solve directly rather than decomposing further.
+4. **Context:** Ensure sub-problems are self-contained (mention the specific subject, avoid "it/they"). Use plain statements, not questions.
 
 ### Output Format
 Output **valid JSON only**.
 
 **Example (Complex):**
-Input: "Compare the EV markets in China and the USA."
-Output: { "sub_questions": ["What is the current state of the EV market in China?", "What is the current state of the EV market in the USA?"] }
+Input: "Compare the EV markets in China and the USA"
+Output: { "sub_problems": ["Current state of the EV market in China", "Current state of the EV market in the USA"] }
 
 **Example (Atomic):**
-Input: "What is the current state of the EV market in China?"
-Output: { "sub_questions": [] }
+Input: "Current state of the EV market in China"
+Output: { "sub_problems": [] }
 """
 
 
@@ -96,7 +97,7 @@ class RequirementDecomposerAgent(BaseAgent[Hypothesis, RequirementGraph]):
 
         root_text = input_data.refined_text or input_data.original_text
         root = Requirement(
-            content=f"How to {root_text.strip('?')}",
+            content=root_text.strip().rstrip("?"),
             level=0,
             parent_ids=[],
         )
@@ -108,54 +109,68 @@ class RequirementDecomposerAgent(BaseAgent[Hypothesis, RequirementGraph]):
         # Index root requirement
         self.requirement_store.add_requirement(root)
 
+        async def process_child(
+            child_content: str, parent: Requirement
+        ) -> Requirement | None:
+            """Process a single child: deduplicate or create new node."""
+            child_level = parent.level + 1
+
+            # Search for similar at child_level ONLY (level constraint)
+            candidates = self.requirement_store.find_similar(
+                content=child_content,
+                level=child_level,
+                top_k=self.top_k_candidates,
+                score_threshold=self.similarity_threshold,
+            )
+
+            if candidates:
+                # Use SimilarityCheckerAgent to decide
+                result = await self.similarity_checker.execute(
+                    SimilarityCheckerInput(
+                        new_content=child_content,
+                        candidates=candidates,
+                    )
+                )
+
+                if result.has_match and result.matched_id:
+                    # Link to existing node (deduplication)
+                    graph.link_existing_child(parent.id, result.matched_id)
+                    print(
+                        f"[DEDUP] Reusing existing node for: "
+                        f"{child_content[:50]}..."
+                    )
+                    print(f"[DEDUP] Reason: {result.reason}")
+                    return None  # Don't recurse - already decomposed
+
+            # No match: create new node
+            child = Requirement(
+                content=child_content.strip(),
+                level=child_level,
+                parent_ids=[parent.id],
+            )
+            graph.add_child(parent.id, child)
+            self.requirement_store.add_requirement(child)
+            return child
+
         async def recurse(req: Requirement):
             if req.level >= self.MAX_LEVEL:
                 return
 
-            # Decompose into sub-questions (returns content strings)
+            # Decompose into sub-problems (returns content strings)
             raw_children = await self.decompose_single(req)
 
-            for child_content in raw_children:
-                child_level = req.level + 1
+            if not raw_children:
+                return
 
-                # Search for similar at child_level ONLY (level constraint)
-                candidates = self.requirement_store.find_similar(
-                    content=child_content,
-                    level=child_level,
-                    top_k=self.top_k_candidates,
-                    score_threshold=self.similarity_threshold,
-                )
+            # Process all children in parallel
+            children = await asyncio.gather(
+                *[process_child(content, req) for content in raw_children]
+            )
 
-                if candidates:
-                    # Use SimilarityCheckerAgent to decide
-                    result = await self.similarity_checker.execute(
-                        SimilarityCheckerInput(
-                            new_content=child_content,
-                            candidates=candidates,
-                        )
-                    )
-
-                    if result.has_match and result.matched_id:
-                        # Link to existing node (deduplication)
-                        graph.link_existing_child(req.id, result.matched_id)
-                        print(
-                            f"[DEDUP] Reusing existing node for: "
-                            f"{child_content[:50]}..."
-                        )
-                        print(f"[DEDUP] Reason: {result.reason}")
-                        # Don't recurse - already decomposed
-                        continue
-
-                # No match: create new node
-                child = Requirement(
-                    content=child_content.strip(),
-                    level=child_level,
-                    parent_ids=[req.id],
-                )
-                graph.add_child(req.id, child)
-                self.requirement_store.add_requirement(child)
-
-                await recurse(child)
+            # Recurse into new children in parallel
+            new_children = [c for c in children if c is not None]
+            if new_children:
+                await asyncio.gather(*[recurse(child) for child in new_children])
 
         await recurse(root)
 
@@ -166,7 +181,7 @@ class RequirementDecomposerAgent(BaseAgent[Hypothesis, RequirementGraph]):
 
     async def decompose_single(self, requirement: Requirement) -> List[str]:
         """
-        Decompose a single requirement into sub-questions.
+        Decompose a single requirement into sub-problems.
 
         Args:
             requirement: Requirement object to decompose
@@ -188,9 +203,9 @@ class RequirementDecomposerAgent(BaseAgent[Hypothesis, RequirementGraph]):
         text = response.output_text.strip()
 
         try:
-            # Parse the JSON list of sub-requirements
+            # Parse the JSON list of sub-problems
             data = json.loads(text)
-            return data.get("sub_questions", [])
+            return data.get("sub_problems", [])
         except Exception as e:
             print("Error parsing model output:", e)
             print("Raw output:", text)
