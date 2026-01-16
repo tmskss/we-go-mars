@@ -1,0 +1,73 @@
+# LLM Prompt Tree – Module 3: Storm Shelter & Habitat Design `[P0|MM]`
+
+## 3. Storm Shelter and Habitat Design
+
+- **3.1 Storm Shelter Sizing**
+  - 3.1.1 What areal density ensures SPE dose < 50 mSv for worst-case spectra?
+    - 3.1.1.1 How does required areal density vary with available shelter materials?
+    - 3.1.1.2 What safety margins compensate for modeling uncertainty?
+    - 3.1.1.3 How does shelter geometry (cylindrical vs rectangular) affect shielding efficiency?
+  - 3.1.2 How much habitable volume is needed per crew member for 24/48/72-hour sheltering?
+    - 3.1.2.1 What ergonomic standards (NASA-STD-3001) govern confined operations?
+    - 3.1.2.2 How are hygiene and medical needs addressed within limited volume?
+    - 3.1.2.3 What environmental controls (lighting, noise) support mental well-being?
+  - 3.1.3 What life-support consumables (O₂, water, scrubbers) must be stored within?
+    - 3.1.3.1 How much CO₂ scrubbing capacity is required per crew member?
+    - 3.1.3.2 What waste management solutions function during shelter-in-place?
+    - 3.1.3.3 How are psychological comfort and ergonomics addressed in confined spaces?
+  - 3.1.4 How quickly can crew transition into the shelter (procedural steps, time budget)?
+    - 3.1.4.1 What automated actions (valves, power configuration) occur during shelter entry?
+    - 3.1.4.2 How frequently should drills be performed to maintain readiness?
+    - 3.1.4.3 What travel times are acceptable for EVA crew to return and shelter?
+  - 3.1.5 What testing validates shelter performance (ground mockups, beamline trials)?
+    - 3.1.5.1 Which facilities can expose full-scale sections to representative spectra?
+    - 3.1.5.2 How are structural, thermal, and life-support systems exercised during tests?
+    - 3.1.5.3 What instrumentation monitors occupant dose and comfort in mockups?
+
+- **3.2 Habitat Shielding Layout**
+  - 3.2.1 How should heavy logistics and consumables be arranged around crew quarters?
+    - 3.2.1.1 What load paths ensure structural stability under launch and landing loads?
+      - 3.2.1.1.1 How are loads redistributed after docking or reconfiguration?
+      - 3.2.1.1.2 What finite-element tools evaluate combined structural/radiation layouts?
+    - 3.2.1.2 How does mass distribution affect vehicle attitude control and center of gravity?
+    - 3.2.1.3 How can storage layouts remain modular for mission reconfiguration?
+  - 3.2.2 Which spaces (sleep quarters, medical bay, flight deck) need highest priority?
+    - 3.2.2.1 What occupancy patterns and duration drive prioritization?
+    - 3.2.2.2 How do mission tasks (piloting, medical procedures, science ops) influence shielding?
+    - 3.2.2.3 What wearable or localized shielding supplements fixed protection?
+  - 3.2.3 How can modular tiles or panels be installed, inspected, and replaced?
+    - 3.2.3.1 What fastening mechanisms withstand structural and pressurization loads?
+    - 3.2.3.2 How are panels inspected for damage (microcracks, leaks)?
+    - 3.2.3.3 What tools and procedures support in-mission repairs or upgrades?
+  - 3.2.4 How do thermal, structural, and human factors considerations constrain layout?
+    - 3.2.4.1 How do insulation and heat rejection requirements interact with shielding?
+    - 3.2.4.2 What structural reinforcements are necessary for heavy shield placement?
+    - 3.2.4.3 How are lighting, acoustics, and access kept acceptable in shielded spaces?
+  - 3.2.5 How can habitats adapt to shielding degradation over multi-mission campaigns?
+    - 3.2.5.1 What monitoring detects material aging or water loss?
+    - 3.2.5.2 How can additional shielding mass be installed with minimal downtime?
+    - 3.2.5.3 What logistics (spares, adhesives) must be planned for refurbishment?
+
+- **3.3 Surface Infrastructure**
+  - 3.3.1 What robotic systems exist for excavation and regolith transport?
+    - 3.3.1.1 What heritage do they have from lunar or terrestrial analog missions?
+      - 3.3.1.1.1 Which missions (Luna, Chang’e, Artemis analogs) provide relevant data?
+      - 3.3.1.1.2 How transferable are Earth analogs to Mars gravity and soil?
+    - 3.3.1.2 How are systems shielded from dust and radiation to ensure reliability?
+    - 3.3.1.3 What maintenance intervals and spare parts are required?
+  - 3.3.2 How can habitats be partially buried while managing thermal loads and access?
+    - 3.3.2.1 What insulating layers or voids prevent excessive heat loss?
+    - 3.3.2.2 How are airlocks, windows, and antennas protected yet functional?
+    - 3.3.2.3 What drainage or ice-management strategies protect structural integrity?
+  - 3.3.3 What sensors (radar, lidar) verify berm geometry and settlement?
+    - 3.3.3.1 How often should inspections occur over a Martian year?
+    - 3.3.3.2 How are sensor datasets processed to detect subsidence or voids?
+    - 3.3.3.3 What maintenance actions follow anomalous readings?
+  - 3.3.4 How can shielded rover garages or tunnels protect EVA crews?
+    - 3.3.4.1 What materials enable rapid-deploy safe havens for rovers?
+    - 3.3.4.2 How quickly can rovers dock and seal during an alert?
+    - 3.3.4.3 How are power and life support maintained inside sheltering enclosures?
+  - 3.3.5 What maintenance routines keep berms stable over dust storms and thermal cycles?
+    - 3.3.5.1 What erosion control measures (geotextiles, sintering) are effective?
+    - 3.3.5.2 How does regolith moisture or ice content impact stability?
+    - 3.3.5.3 What robotics or crew tasks reinforce berms periodically?

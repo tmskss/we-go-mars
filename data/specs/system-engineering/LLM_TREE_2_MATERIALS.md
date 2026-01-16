@@ -1,0 +1,99 @@
+# LLM Prompt Tree – Module 2: Shielding Materials & Structures `[P0|MM]`
+
+## 2. Shielding Materials and Structures
+
+- **2.1 Hydrogen-Rich Materials**
+  - 2.1.1 Which polyethylene grades (HDPE, UHMWPE) are qualified for crewed spacecraft?
+    - 2.1.1.1 What mechanical properties (modulus, strength) are required?
+    - 2.1.1.2 What suppliers provide space-qualified feedstock?
+    - 2.1.1.3 How do radiation aging effects impact long-duration missions?
+  - 2.1.2 What processing methods (compression molding, additive manufacturing) suit shielding panels?
+    - 2.1.2.1 What equipment is required to process large-area panels?
+    - 2.1.2.2 How do processing conditions affect hydrogen retention?
+    - 2.1.2.3 What quality assurance tests verify panel consistency?
+  - 2.1.3 What hydrogen content (wt%) thresholds significantly reduce LET-weighted dose?
+    - 2.1.3.1 How does dose reduction scale with hydrogen content?
+    - 2.1.3.2 What trade-offs exist between hydrogen content and mechanical properties?
+    - 2.1.3.3 How do hydration or desorption effects change content over time?
+  - 2.1.4 Which emerging materials (BNNT, CNT-polyethylene) show promise at TRL 3–5?
+    - 2.1.4.1 What radiation attenuation data exist for these materials?
+      - 2.1.4.1.1 Which accelerator campaigns have tested them?
+      - 2.1.4.1.2 What uncertainties remain in attenuation coefficients?
+    - 2.1.4.2 Which suppliers can deliver prototypes at relevant scales?
+    - 2.1.4.3 What manufacturing or cost challenges remain?
+  - 2.1.5 How do flammability, outgassing, and structural properties constrain selection?
+    - 2.1.5.1 What tests (NASA flammability, ASTM E595) must materials pass?
+    - 2.1.5.2 How do materials behave under vacuum and temperature extremes?
+    - 2.1.5.3 What structural reinforcements are needed to meet load requirements?
+
+- **2.2 Multifunctional Mass**
+  - 2.2.1 How should water, food, and waste be distributed around living quarters for shielding?
+    - 2.2.1.1 What modular packaging supports reconfiguration as inventories change?
+    - 2.2.1.2 How can consumable placement be monitored (mass, position) in real time?
+    - 2.2.1.3 What operational procedures address depletion while maintaining shielding targets?
+  - 2.2.2 What structural reinforcements or leak mitigation strategies secure water walls?
+    - 2.2.2.1 What materials (liners, reinforcements) prevent punctures or leaks?
+      - 2.2.2.1.1 How are micro-meteoroid impacts mitigated for water bladders?
+      - 2.2.2.1.2 What inspection methods detect internal micro-leaks?
+    - 2.2.2.2 How are water-wall bladders inspected and repaired in situ?
+    - 2.2.2.3 How do mounting solutions cope with launch vibrations and microgravity deployment?
+  - 2.2.3 How do storm shelter consumables remain accessible without degrading shielding?
+    - 2.2.3.1 What storage layouts balance accessibility and shielding coverage?
+    - 2.2.3.2 How can movable shielding panels be designed for rapid reconfiguration?
+    - 2.2.3.3 How are ergonomic needs handled during prolonged shelter occupancy?
+  - 2.2.4 How does propellant depletion affect shielding effectiveness over the mission timeline?
+    - 2.2.4.1 What propellant management strategies preserve shielding mass?
+    - 2.2.4.2 How can flight dynamics and shielding teams coordinate propellant usage plans?
+    - 2.2.4.3 What analytic tools track shielding margin as tanks deplete?
+  - 2.2.5 What contingency plans exist if consumable levels drop below shielding requirements?
+    - 2.2.5.1 How quickly can additional mass (cargo, equipment) be repositioned?
+    - 2.2.5.2 What mission rules govern rationing versus shielding trade-offs?
+    - 2.2.5.3 How can small models generate alerts or recommendations when thresholds are crossed?
+
+- **2.3 Regolith and ISRU Structures**
+  - 2.3.1 What excavation system capabilities (power, throughput) are needed for 1–2 m berms?
+    - 2.3.1.1 What robotic platforms or teleoperated systems meet these requirements?
+    - 2.3.1.2 How do energy constraints (solar vs fission) limit excavation?
+    - 2.3.1.3 What contingency plans exist if ISRU equipment fails?
+  - 2.3.2 Which binders (sulfur, polymer, water-ice) stabilize regolith for structural use?
+    - 2.3.2.1 What curing times and energy inputs are required for each binder?
+    - 2.3.2.2 How do binders affect thermal conductivity and expansion?
+    - 2.3.2.3 Which binders are compatible with in-situ resource availability?
+  - 2.3.3 How do regolith concretes compare to imported composites in mass and performance?
+    - 2.3.3.1 What densities and compressive strengths are achievable?
+      - 2.3.3.1.1 How do different simulant compositions (JSC Mars-1A, MMS-1) affect properties?
+      - 2.3.3.1.2 What curing conditions (temperature, pressure) optimize strength?
+    - 2.3.3.2 How do they perform under repeated thermal cycling?
+    - 2.3.3.3 What radiation attenuation factors result from different mixes?
+  - 2.3.4 What quality control methods verify berm thickness and density?
+    - 2.3.4.1 Can ground-penetrating radar or radiography be used in situ?
+    - 2.3.4.2 How are measurement devices shielded from dust and radiation?
+    - 2.3.4.3 What inspection frequency maintains confidence in berm integrity?
+  - 2.3.5 How can ISRU operations be scheduled to minimize crew radiation exposure?
+    - 2.3.5.1 What time-of-day or seasonal considerations reduce risk?
+    - 2.3.5.2 How can robotics perform shielding tasks during high-radiation periods?
+    - 2.3.5.3 How do mission planners balance power generation with shielding construction?
+
+- **2.4 Active/Hybrid Shielding**
+  - 2.4.1 What mass, power, and cryogenic requirements accompany superconducting magnets?
+    - 2.4.1.1 Which superconducting materials (MgB₂, YBCO) are most promising?
+    - 2.4.1.2 How would cryocooler failures be mitigated?
+    - 2.4.1.3 Can active shielding be confined to local regions (e.g., storm shelter only)?
+    - 2.4.1.4 What structural supports and magnetic shielding are required to protect crew?
+  - 2.4.2 How do hybrid magnetic + passive systems perform in simulations?
+    - 2.4.2.1 What combined attenuation factors are predicted?
+    - 2.4.2.2 How sensitive are results to coil placement and field strength?
+    - 2.4.2.3 What failure modes arise from interactions between active and passive elements?
+  - 2.4.3 Are electrostatic shields viable given Martian dust plasma conditions?
+    - 2.4.3.1 How do dust and plasma interactions degrade electrostatic fields?
+    - 2.4.3.2 What power levels are needed to maintain effective potentials?
+    - 2.4.3.3 Are there safety concerns (arcing, ozone generation)?
+  - 2.4.4 What technology demonstrations or ground experiments exist (TRL ≥ 2)?
+    - 2.4.4.1 What lab-scale experiments simulate space radiation with active fields?
+    - 2.4.4.2 Which programs (ESA SUPERSHIELD, NASA RadWorks) fund demonstrations?
+    - 2.4.4.3 What milestones remain before flight demonstrations?
+  - 2.4.5 What are failure modes and safety considerations for active systems?
+    - 2.4.5.1 How do quench events in superconducting coils impact crew safety?
+    - 2.4.5.2 What redundancy or fail-safe mechanisms are required?
+    - 2.4.5.3 How are maintenance and inspection handled for active components?
+    - 2.4.5.4 What certification or safety review processes govern active-field hardware?

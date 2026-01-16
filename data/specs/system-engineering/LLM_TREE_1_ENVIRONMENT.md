@@ -1,0 +1,96 @@
+# LLM Prompt Tree – Module 1: Radiation Environment Characterization `[P0|ML]`
+
+## 1. Radiation Environment Characterization
+
+- **1.1 Galactic Cosmic Rays (GCR)**
+  - 1.1.1 What are typical GCR dose rates during solar minimum, maximum, and transitional phases?
+    - 1.1.1.1 What uncertainties and confidence intervals accompany these estimates?
+      - 1.1.1.1.1 Which physical inputs (modulation potential, heliospheric current sheet tilt) drive uncertainty?
+      - 1.1.1.1.2 How can stochastic modeling better capture solar minimum variability?
+    - 1.1.1.2 How do heliocentric trajectories (opposition-class vs conjunction-class) affect exposure?
+      - 1.1.1.2.1 What durations and heliocentric distances characterize each trajectory?
+      - 1.1.1.2.2 How do trajectory choices impact shielding mass allocation?
+    - 1.1.1.3 How can mission planners adjust timelines to exploit favorable solar conditions?
+      - 1.1.1.3.1 What forecasting tools project solar cycle phase years in advance?
+      - 1.1.1.3.2 How feasible is delaying launch windows for radiation optimization?
+  - 1.1.2 Which heavy-ion species (Fe, C, O) dominate LET-weighted dose?
+    - 1.1.2.1 Which species penetrate typical shielding thicknesses most effectively?
+    - 1.1.2.2 How do fragment spectra evolve inside hydrogen-rich materials?
+    - 1.1.2.3 What biological weighting factors apply to each species?
+  - 1.1.3 How do shielding thickness and composition alter GCR spectral response?
+    - 1.1.3.1 How do aluminum vs polyethylene vs BNNT laminates compare?
+    - 1.1.3.2 What secondary particle production occurs in each material?
+    - 1.1.3.3 How thick must shielding be to achieve 20%, 40%, 60% dose reduction?
+  - 1.1.4 What datasets (MSL RAD, Orion EM-1, ISS, Voyager) support GCR model validation?
+    - 1.1.4.1 What measurement uncertainties accompany each dataset?
+    - 1.1.4.2 How can datasets from different instruments be cross-calibrated?
+    - 1.1.4.3 Which datasets cover energy ranges critical for shielding design?
+  - 1.1.5 How do solar modulation models (Badhwar-O’Neill, ISO 15390) differ in accuracy?
+    - 1.1.5.1 Which models align best with recent solar cycles?
+    - 1.1.5.2 How sensitive are models to input parameters (sunspot number, modulation potential)?
+    - 1.1.5.3 How can machine learning or data assimilation improve modulation predictions?
+
+- **1.2 Solar Particle Events (SPE)**
+  - 1.2.1 Which historical SPEs (August 1972, October 1989) define upper-bound design cases?
+  - 1.2.2 How often do extreme SPEs occur during solar cycles, and how reliable are predictions?
+    - 1.2.2.1 Which statistical models estimate SPE frequency (Poisson, over-dispersed)?
+      - 1.2.2.1.1 What historical datasets inform these models?
+      - 1.2.2.1.2 How do models treat clustering of events within active regions?
+    - 1.2.2.2 How do forecasting agencies communicate probability vs. severity?
+      - 1.2.2.2.1 What confidence metrics (probability of exceedance) are included in alerts?
+      - 1.2.2.2.2 How are forecasts translated into mission decision rules?
+    - 1.2.2.3 How should probabilistic risk be incorporated into shelter sizing?
+      - 1.2.2.3.1 What risk thresholds (1-in-100 year event) do agencies adopt?
+      - 1.2.2.3.2 How do margins change for multi-mission campaign planning?
+  - 1.2.3 What spectral parameters (fluence, energy distribution) matter most for shielding?
+    - 1.2.3.1 Which energy ranges dominate dose behind typical shielding thicknesses?
+      - 1.2.3.1.1 How does attenuation vary between 10–100 MeV and >100 MeV protons?
+      - 1.2.3.1.2 What data sources provide high-energy spectral tails?
+    - 1.2.3.2 How do high-energy tails impact storm shelter design?
+    - 1.2.3.3 How are spectral inputs prepared for transport simulations?
+  - 1.2.4 How effective are current alert systems (NOAA SWPC, ESA SSA) in providing actionable lead time?
+    - 1.2.4.1 What data sources (GOES, SOHO, STEREO) underpin alerts?
+      - 1.2.4.1.1 How often are sensors offline or degraded, and what redundancy exists?
+      - 1.2.4.1.2 What latency occurs between detection and alert dissemination?
+    - 1.2.4.2 How often do alerts false-alarm or miss events?
+      - 1.2.4.2.1 What statistical performance (precision/recall) do agencies report?
+      - 1.2.4.2.2 How do mission operations handle false positives to avoid fatigue?
+    - 1.2.4.3 How can onboard sensors complement ground-based monitoring?
+      - 1.2.4.3.1 What onboard instrumentation (HERA, RAD) can trigger autonomous alerts?
+      - 1.2.4.3.2 How are onboard and ground alerts reconciled if they disagree?
+  - 1.2.5 What mitigation strategies exist when warning time is <30 minutes?
+    - 1.2.5.1 How quickly can crew reach storm shelter after an alert?
+      - 1.2.5.1.1 What steps (suit doffing, hatch sealing) dominate entry time?
+      - 1.2.5.1.2 How are EVA crews prioritized for rapid ingress?
+    - 1.2.5.2 What automated systems can pre-stage shelter resources?
+      - 1.2.5.2.1 How can robotics reposition water or shielding panels autonomously?
+      - 1.2.5.2.2 What systems automatically transition life support to shelter mode?
+    - 1.2.5.3 What fallback options exist if shelter entry is delayed?
+      - 1.2.5.3.1 How can local shielding (portable panels) provide interim protection?
+      - 1.2.5.3.2 What medical interventions mitigate higher-than-planned exposure?
+
+- **1.3 Mars Surface Environment**
+  - 1.3.1 How does atmospheric depth vary with altitude and affect radiation attenuation?
+    - 1.3.1.1 Which landing sites offer inherent shielding advantages?
+      - 1.3.1.1.1 How do elevation maps translate to atmospheric depth?
+      - 1.3.1.1.2 What trade-offs exist between radiation protection and ISRU resource access?
+    - 1.3.1.2 How do diurnal/seasonal pressure changes influence shielding needs?
+    - 1.3.1.3 How does dust loading affect secondary particle production?
+  - 1.3.2 What surface dose rates have been measured (MSL RAD, Mars Odyssey MARIE)?
+    - 1.3.2.1 How do these datasets vary with solar cycle and atmospheric conditions?
+      - 1.3.2.1.1 What seasonal trends were observed by RAD during dusty vs clear periods?
+      - 1.3.2.1.2 How do measurements differ between cruise and surface phases?
+    - 1.3.2.2 What calibration challenges exist for RAD and MARIE instruments?
+    - 1.3.2.3 How can future missions refine surface dose estimates?
+  - 1.3.3 How do dust storms or seasonal CO₂ deposition influence radiation environment?
+    - 1.3.3.1 Do storms attenuate or enhance surface particle fluxes?
+    - 1.3.3.2 How does atmospheric mass redistribution affect shielding calculations?
+    - 1.3.3.3 What operational constraints arise from storm-related visibility or power loss?
+  - 1.3.4 What secondary particle fields (neutrons, gamma) arise from regolith interactions?
+    - 1.3.4.1 How do regolith composition and hydration levels affect neutron production?
+    - 1.3.4.2 What measurement techniques quantify secondary fields in situ?
+    - 1.3.4.3 How should shielding account for upward albedo neutrons?
+  - 1.3.5 How should data from future missions (Mars Sample Return orbiters, lunar Gateway) be used to refine models?
+    - 1.3.5.1 Which instruments will provide relevant radiation measurements?
+    - 1.3.5.2 How can cross-program data sharing accelerate shielding design updates?
+    - 1.3.5.3 How can LLMs synthesize new findings into existing models?

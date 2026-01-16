@@ -1,0 +1,75 @@
+# LLM Prompt Tree – Module 0: Mission Context & Exposure Limits `[P0|ML]`
+
+## 0. Mission-Level Framing
+- **0.1 Mission Phases and Timeline**
+  - 0.1.1 How long is each mission phase (assembly, outbound transit, surface stay, return)?
+    - 0.1.1.1 What baseline timeline is assumed in current NASA/ESA DRMs?
+      - 0.1.1.1.1 Which DRMs (e.g., DRA 5.0, NASA 2024) underpin those baselines?
+      - 0.1.1.1.2 How are precursor cargo, crew, and relay missions sequenced in the baseline?
+    - 0.1.1.2 How do propulsion options (chemical, nuclear thermal, electric) alter phase duration?
+      - 0.1.1.2.1 What Δv budgets and propellant masses does each option require?
+      - 0.1.1.2.2 How do propulsion choices affect launch cadence and refueling strategy?
+    - 0.1.1.3 What are the cumulative exposure implications for each timeline?
+      - 0.1.1.3.1 How does total mission dose vary with transit duration?
+      - 0.1.1.3.2 What trade studies compare radiation vs propulsion cost for fast transits?
+  - 0.1.2 What assumptions underpin nominal vs. fast-transit trajectories?
+    - 0.1.2.1 What Δv budgets and propellant masses are required?
+    - 0.1.2.2 How do faster trajectories trade propulsion demands against radiation exposure?
+    - 0.1.2.3 What technology readiness levels enable fast transits?
+  - 0.1.3 How do logistics flights (cargo pre-deployment) alter radiation exposure planning?
+    - 0.1.3.1 Which precursor assets can pre-position shielding or ISRU equipment?
+      - 0.1.3.1.1 What mass fraction of cargo should be dedicated to shielding infrastructure?
+      - 0.1.3.1.2 How are precursor payloads protected from radiation before crew arrival?
+    - 0.1.3.2 How does staggered arrival of habitats and crew affect shielding readiness?
+      - 0.1.3.2.1 What schedule margins ensure berms or shelters are complete before landing?
+      - 0.1.3.2.2 How is risk managed if ISRU tasks fall behind schedule?
+    - 0.1.3.3 What mass trade-offs exist between dedicated shielding payloads and multifunctional cargo?
+      - 0.1.3.3.1 How can consumables double as shielding while meeting life-support needs?
+      - 0.1.3.3.2 Which optimization tools compare dedicated vs. multifunctional shielding mass?
+
+- **0.2 Hazard Classification**
+  - 0.2.1 Which radiation sources dominate during LEO aggregation, heliocentric cruise, and Mars surface?
+    - 0.2.1.1 How does Earth’s magnetosphere reduce exposure during LEO staging and departure?
+      - 0.2.1.1.1 What orbital inclinations maximize shielding from the geomagnetic field?
+      - 0.2.1.1.2 How rapidly does protection fall off beyond ~1000 km altitude?
+    - 0.2.1.2 What roles do trapped radiation belts play for departure and arrival trajectories?
+      - 0.2.1.2.1 What transfer trajectories minimize time in the inner/outer belts?
+      - 0.2.1.2.2 How do belt crossings differ for Mars direct vs lunar staging profiles?
+    - 0.2.1.3 How does solar cycle modulation alter relative contributions?
+      - 0.2.1.3.1 What is the expected range of GCR flux variability between solar minimum and maximum?
+      - 0.2.1.3.2 How are SPE likelihood and severity modulated by sunspot activity?
+  - 0.2.2 What non-radiation hazards interact with shielding decisions (e.g., MMOD, thermal constraints)?
+    - 0.2.2.1 How can shielding materials double as MMOD or debris protection?
+      - 0.2.2.1.1 What are the mass penalties of dual-use MMOD/radiation shields?
+      - 0.2.2.1.2 Which multi-layer insulation designs incorporate radiation absorbers?
+    - 0.2.2.2 What thermal properties (conductivity, emissivity) must shielding layers satisfy?
+      - 0.2.2.2.1 How do water walls and hydrogen-rich polymers impact spacecraft thermal balance?
+      - 0.2.2.2.2 What coatings or radiators mitigate thermal penalties of heavy shielding?
+    - 0.2.2.3 How do structural loads (launch, landing, pressurization) limit shielding placement?
+      - 0.2.2.3.1 What reinforcement is required to mount dense shielding near airlocks or windows?
+      - 0.2.2.3.2 How do pressurization cycles stress modular shielding panels?
+  - 0.2.3 How do mission abort or contingency profiles alter exposure scenarios?
+    - 0.2.3.1 What is the radiation impact of safe-harbor or free-return trajectories?
+      - 0.2.3.1.1 How much does transit time increase under free-return options?
+      - 0.2.3.1.2 How do altered Sun-relative angles affect SPE risk during aborts?
+    - 0.2.3.2 How do shelter durations and exposure budgets change under contingency timelines?
+      - 0.2.3.2.1 How much additional water/consumables must be reserved for prolonged sheltering?
+      - 0.2.3.2.2 What mission rules govern reallocation of science time to shielding tasks?
+    - 0.2.3.3 How can LLMs assist in evaluating exposure for alternative mission plans?
+      - 0.2.3.3.1 What mission data (trajectory files, shielding inventories) should be ingested?
+      - 0.2.3.3.2 How can models present exposure trade-offs in dashboards for rapid decision-making?
+
+- **0.3 Crew Exposure Limits**
+  - 0.3.1 What are agency-specific dose limits (NASA, ESA, CNSA, Roscosmos, JAXA)?
+    - 0.3.1.1 What mission-specific limits supplement career caps?
+    - 0.3.1.2 How do agencies define acceptable risk (e.g., %REID at 95% CL)?
+  - 0.3.2 How do gender, age, and career considerations influence permissible dose?
+    - 0.3.2.1 What biological models underpin differentiated limits?
+    - 0.3.2.2 How are per-astronaut cumulative doses tracked across missions?
+    - 0.3.2.3 How do agencies manage crew rotations to control career exposure?
+  - 0.3.3 What legislative or policy changes are anticipated for exploration-class limits?
+    - 0.3.3.1 How are NASA’s proposed rolling career limits evolving?
+    - 0.3.3.2 What international harmonization efforts exist for deep-space standards?
+    - 0.3.3.3 How might future biomedical findings prompt limit revisions?
+      - 0.3.3.3.1 How could updated cancer risk models shift allowable lifetime doses?
+      - 0.3.3.3.2 What precedents exist for mid-program revisions to crew exposure policy?
