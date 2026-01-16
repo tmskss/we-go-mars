@@ -19,6 +19,7 @@ from qdrant_client.models import (
     Filter,
     FieldCondition,
     MatchValue,
+    PayloadSchemaType,
 )
 
 from src.config import settings
@@ -67,7 +68,9 @@ class RequirementStore:
     def _ensure_collection(self) -> None:
         """Create the collection if it doesn't exist."""
         collections = self.client.get_collections()
-        if self.COLLECTION_NAME not in [c.name for c in collections.collections]:
+        collection_exists = self.COLLECTION_NAME in [c.name for c in collections.collections]
+
+        if not collection_exists:
             self.client.create_collection(
                 collection_name=self.COLLECTION_NAME,
                 vectors_config={
@@ -76,6 +79,13 @@ class RequirementStore:
                         distance=Distance.COSINE,
                     )
                 },
+            )
+
+            # Create payload index for level field (required for filtering)
+            self.client.create_payload_index(
+                collection_name=self.COLLECTION_NAME,
+                field_name="level",
+                field_schema=PayloadSchemaType.INTEGER,
             )
 
     def clear(self) -> None:
@@ -176,9 +186,10 @@ class RequirementStore:
             ]
         )
 
-        results = self.client.search(
+        results = self.client.query_points(
             collection_name=self.COLLECTION_NAME,
-            query_vector=(self.DENSE_VECTOR_NAME, query_embedding),
+            query=query_embedding,
+            using=self.DENSE_VECTOR_NAME,  # Specify which named vector to use
             query_filter=level_filter,
             limit=top_k,
             with_payload=True,
